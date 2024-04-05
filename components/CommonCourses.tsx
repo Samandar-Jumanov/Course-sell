@@ -20,7 +20,8 @@ export const MostCommonCourses = () => {
     };
 
     return (
-        <div className="my-2 mx-auto max-w-7xl p-6  bg-slate-700">
+        <div className='w-screen bg-slate-700 p-2'>
+            <div className="my-2 mx-auto max-w-7xl p-6">
             <Slider {...settings}>
                 {commonCourses.map((course) => (
                     <div key={course.id} className=" text-white flex flex-col items-center  bg-slate-900 rounded-lg overflow-hidden shadow-lg text-center py-6 px-4">
@@ -38,6 +39,7 @@ export const MostCommonCourses = () => {
                     </div>
                 ))}
             </Slider>
+        </div>
         </div>
     );
 };

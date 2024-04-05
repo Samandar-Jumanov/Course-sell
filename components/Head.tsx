@@ -44,9 +44,9 @@ export const HeadContent = () => {
   });
 
   return (
-    <div className="w-screen  bg-slate-700 text-white flex justify-center items-center gap-8 p-4 ">
+    <div className="w-screen   bg-slate-200 text-black flex justify-center items-center gap-8 p-4 ">
       {transitions((style, i) => (
-        <animated.div style={style} className="flex flex-col md:flex-row items-center gap-4 p-4 w-auto h-auto">
+        <animated.div style={style} className="flex flex-col md:flex-row items-center gap-4 p-4 w-auto h-auto bg-slate-600 rounded-e-xl">
           <div className="w-48 h-48 md:w-64 md:h-64 relative rounded-full overflow-hidden border-4 border-white">
             <Image src="/user.jpeg" layout="fill" objectFit="cover" alt='User image' />
           </div>
