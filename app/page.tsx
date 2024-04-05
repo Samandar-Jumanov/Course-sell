@@ -1,7 +1,10 @@
-import { Head } from "@/components/Head";
-
+import { HeadContent } from "@/components/Head";
+import { MostCommonCourses } from "@/components/CommonCourses"
 export default function Home() {
   return (
-      <Head />
+        <div >
+           <HeadContent />
+           <MostCommonCourses />
+        </div>
   );
 }
