@@ -3,7 +3,7 @@
 import React from 'react';
 import Slider from 'react-slick';
 import Image from 'next/image';
-import Rating from 'react-rating-stars-component';
+import Rating   from 'react-rating-stars-component';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { commonCourses } from './courses';
