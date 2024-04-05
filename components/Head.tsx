@@ -1,36 +1,22 @@
 "use client"
-import React , { useEffect , useState } from 'react';
+
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useTransition, animated } from 'react-spring';
-interface Feedback {
-  id: number;
-  username: string;
-  text: string;
-  rate: number;
-  course: string;
-}
+import { feedBacks } from './feedbacksData';
 
-// Dummy feedback data
-const feedBacks: Feedback[] = [
-  { id: 1, username: "Samandar Jumanov", text: "It is better to use this app rather than not using it.", rate: 4, course: "Dropshipping" },
-  { id: 2, username: "John Doe", text: "This app has been incredibly useful for my daily tasks.", rate: 5, course: "Sales" },
-  { id: 3, username: "Jane Smith", text: "I found the app to be useful, but it needs some improvements.", rate: 3, course: "Online" },
-];
-
-const Stars = ({ rate }: { rate: number }) => {
-  return (
-    <div className="flex text-yellow-400">
-      {Array.from({ length: 5 }, (_, index) => (
-        <span key={index}>{index < rate ? '★' : '☆'}</span>
-      ))}
-    </div>
-  );
-};
+const Stars = ({ rate }: { rate: number }) => (
+  <div className="flex text-yellow-400">
+    {Array.from({ length: 5 }, (_, index) => (
+      <span key={index}>{index < rate ? '★' : '☆'}</span>
+    ))}
+  </div>
+);
 
 export const HeadContent = () => {
   const [index, setIndex] = useState(0);
 
- useEffect(() => {
+  useEffect(() => {
     const interval = setInterval(() => {
       setIndex((state) => (state + 1) % feedBacks.length);
     }, 3000);
@@ -44,22 +30,20 @@ export const HeadContent = () => {
   });
 
   return (
-    <div className="w-screen   bg-slate-200 text-black flex justify-center items-center gap-8 p-4 ">
+    <div className="w-full bg-slate-200 text-black flex justify-center items-center p-4 md:gap-8">
       {transitions((style, i) => (
-        <animated.div style={style} className="flex flex-col md:flex-row items-center gap-4 p-4 w-auto h-auto bg-slate-600 rounded-e-xl">
-          <div className="w-48 h-48 md:w-64 md:h-64 relative rounded-full overflow-hidden border-4 border-white">
+        <animated.div style={style} className="flex flex-col md:flex-row items-center gap-4 p-4 bg-slate-600 rounded-e-xl">
+          <div className="w-32 h-32 md:w-48 md:h-48 lg:w-64 lg:h-64 relative rounded-full overflow-hidden border-4 border-white">
             <Image src="/user.jpeg" layout="fill" objectFit="cover" alt='User image' />
           </div>
-          <div className="space-y-4 w-80 h-89">
-            <h2 className="text-xl md:text-2xl font-semibold">{feedBacks[i].username}</h2>
-            <p className="text-sm md:text-base">{feedBacks[i].text}</p>
+          <div className="space-y-4">
+            <h2 className="text-lg md:text-xl lg:text-2xl font-semibold">{feedBacks[i].username}</h2>
+            <p className="text-xs md:text-sm lg:text-base">{feedBacks[i].text}</p>
             <Stars rate={feedBacks[i].rate} />
-            <button className="mt-2 px-4 py-2 bg-blue-500 rounded hover:bg-blue-700 transition-colors">{feedBacks[i].course}</button>
+            <button className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition-colors text-xs md:text-sm lg:text-base">{feedBacks[i].course}</button>
           </div>
         </animated.div>
       ))}
-
-
     </div>
   );
 };

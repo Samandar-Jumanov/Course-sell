@@ -5,7 +5,7 @@ import { FaInstagram, FaPhone, FaYoutube } from 'react-icons/fa';
 
 const Footer = () => {
   return (
-    <footer className="bg-slate-200 w-full mt-auto py-4 px-2 flex flex-col items-center gap-4">
+    <footer className="bg-slate-500 w-full  p-4 flex flex-col items-center gap-4">
       <div className="flex flex-col md:flex-row items-center justify-center gap-4">
         {/* Instagram Link */}
         <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
