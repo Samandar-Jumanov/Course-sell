@@ -1,6 +1,5 @@
 import mongoose, { Schema , Model } from "mongoose";
 import { IUser } from "../../types/user";
-import { NextFunction } from "express";
 import bcrypt from "bcryptjs";
 
 
@@ -38,6 +37,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
 
     isVerified: {
         type: Boolean,
+        default : false 
     },
 
     courses:[ {
@@ -45,12 +45,15 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     }],
 
     role : {
-        type : String 
+        type : String ,
+        default : "User"
     },
+
     comparePassword: {
         type: Function,
         required: [true]
     }
+
 } , { timestamps : true });
 
 

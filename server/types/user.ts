@@ -16,5 +16,12 @@ export interface IUser extends Document {
 
 
 
+export interface IUserRegisterBody {
+     name : string ,
+     password : string ,
+     email : string ,
+     avatar ? : string 
+}
+
 
 
