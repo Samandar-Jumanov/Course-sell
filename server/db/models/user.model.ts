@@ -1,5 +1,8 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema , Model } from "mongoose";
 import { IUser } from "../../types/user";
+import { NextFunction } from "express";
+import bcrypt from "bcryptjs";
+
 
 const emailRegex: RegExp = /^[\w._%+-]+@[\w.-]+\.[a-zA-Z]{2,}$/i;
 
@@ -48,6 +51,22 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
         type: Function,
         required: [true]
     }
-});
+} , { timestamps : true });
 
-export const UserModel = mongoose.model<IUser>("User", userSchema);
+
+ userSchema.pre<IUser>("save" , async  function  ( next  ) {
+      if(!this.isModified("password")){
+              next()
+      }
+
+      this.password = await bcrypt.hash(this.password , 10)
+      next()
+ })
+
+ userSchema.methods.comparePassword = async function ( password : string ) : Promise<boolean> {
+      return  await bcrypt.compare(this.password , password)
+ };
+
+
+
+export const UserModel : Model<IUser>= mongoose.model<IUser>("User", userSchema);
