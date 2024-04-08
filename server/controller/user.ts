@@ -8,6 +8,7 @@ import { createActivationCode, sendMail } from "../utils/utilFunctions";
 import { IUser } from "../types/user";
 import jwt from "jsonwebtoken";
 import { sendToken } from "../utils/jwt"
+import { redisClient } from "../db/redis";
  
 export const signUp  = CatchAsyncError( async ( request : Request , response : Response , next : NextFunction) =>{
 
@@ -127,6 +128,23 @@ export const login = CatchAsyncError(
          }catch(error : any ){
               throw new ErrorHandler(error.message , 500)
          }
+});
 
 
-})
+
+export const logOut = async ( request : Request , response : Response , next : NextFunction) =>{
+        try {
+            response.cookie("access_token", "" , { maxAge : 1 })
+            response.cookie("refresh_token" , "" , { maxAge : 1 })
+            redisClient.del(request?.user?._id)
+
+            response.status(200).json({
+                 success : true ,
+                 message : "Succesfully logged out "
+            })
+        }catch( error : any) {
+              throw new ErrorHandler(error.message , 500)
+        }
+}
+
+

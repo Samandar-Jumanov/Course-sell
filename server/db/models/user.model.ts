@@ -86,7 +86,7 @@ userSchema.methods.SignAccesToken = async function () {
 }
 
 userSchema.methods.SignRefreshToken = async function () {
-    return jwt.sign({ id : this._id } , process.env.SIGN_REFRESH_TOKEN || "" )
+    return jwt.sign({ id : this._id } , process.env.SIGN_ACCES_TOKEN || "" )
 }
 
 
