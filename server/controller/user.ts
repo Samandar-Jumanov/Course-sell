@@ -7,9 +7,8 @@ import { ErrorType } from "../types/error";
 import { createActivationCode, sendMail } from "../utils/utilFunctions";
 import { IUser } from "../types/user";
 import jwt from "jsonwebtoken";
-
-
-
+import { sendToken } from "../utils/jwt"
+ 
 export const signUp  = CatchAsyncError( async ( request : Request , response : Response , next : NextFunction) =>{
 
       try {
@@ -93,5 +92,41 @@ CatchAsyncError( async ( request : Request , response : Response , next : NextFu
       }catch(err : any ){
            throw new ErrorHandler(err.message , 500)
       }
+
+})
+
+
+
+export const login = CatchAsyncError( 
+    async ( request : Request , response : Response , next : NextFunction) =>{
+    
+         try {
+              
+        const { email , password} = request.body;
+
+        if(!email || !password) {
+               throw new ErrorHandler("Invalid inouts" , 400)
+        }
+
+
+
+        const user = await UserModel.findOne({ email : email});
+
+        if(!user) {
+              throw new ErrorHandler("User not found" , 404)
+        };
+
+
+        const isPasswordMatch = await user.comparePassword(password);
+
+        if(!isPasswordMatch) {
+              throw new ErrorHandler("Invalid password" , 403)
+        }
+
+          await sendToken(user , response , 200)
+         }catch(error : any ){
+              throw new ErrorHandler(error.message , 500)
+         }
+
 
 })
