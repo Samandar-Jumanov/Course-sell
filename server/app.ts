@@ -3,15 +3,17 @@ import cookieParser from "cookie-parser";
 import cors from "cors"
 import contentRouter from "./routes/content";
 import { connectMongoose } from "./db/connectionMongo";
+import { ErrorMiddleware } from "./middlewares/error";
 
 require("dotenv").config();
 
 const app  : Express = express();
 
 
-
+//middlewares 
 app.use(express.json({ limit : "500mb"}))
 app.use(cookieParser())
+app.use(ErrorMiddleware)
 app.use(cors({
       origin : process.env.ACCESIBLE_PORTS
 }))

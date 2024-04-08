@@ -4,7 +4,7 @@ import { ErrorType } from "../types/error";
 
 
 
-export const Error = ( error : ErrorType , request : Request , response : Response , next : NextFunction) =>{
+export const ErrorMiddleware = ( error : ErrorType , request : Request , response : Response , next : NextFunction) =>{
      error.message = error.message || "Internal server error";
      error.statusCode = error.statusCode || 500;
 
