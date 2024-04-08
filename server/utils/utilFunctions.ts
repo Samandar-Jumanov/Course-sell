@@ -2,6 +2,8 @@
 import { IUser } from "../types/user"
 import jwt  ,{  Secret }from "jsonwebtoken";
 import nodemailer from "nodemailer"
+import  ErrorHandler  from "../utils/errorHandler";
+
 require("dotenv").config();
 
 
@@ -27,8 +29,6 @@ export const createActivationCode = async ( user : IUser | any  ) : Promise<IAct
            activationCode
      }
 
-
-
 }
 
 
@@ -43,20 +43,110 @@ const transporter = nodemailer.createTransport({
     maxConnections: 1
   })
 
-export const sendMail = ( emaailContent : any , sendTo ) =>{
+
+export const sendMail = ( sendTo : string , name : string , code: string  )  =>{
+
+const activationEmailBody =` 
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Activation Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Email Activation Code</h2>
+        <h2>Hello${name}</h2>
+
+        <form action="#" method="post">
+            <label for="activationCode">Activation Code: ${code}></label>
+            <input type="text" id="activationCode" name="activationCode" required>
+
+            <button type="submit">Activate</button>
+        </form>
+    </div>
+
+</body>
+
+</html>
+
+`
   
  
     const mailOptions = {
         from: 'samandarjumanov@outlook.com',
         to: sendTo,
-        html: emaailContent.body,
-        subject: emaailContent.subject,
+        html: activationEmailBody,
+        subject: "Activation code ",
       }
-    
-      transporter.sendMail(mailOptions, (error: any, info: any) => {
-        if(error) return console.log(error);
         
-        console.log('Email sent: ', info);
+
+      try {
+          
+      transporter.sendMail(mailOptions, (error: any, info: any) => {
+         if(error) return  new ErrorHandler(`${error.message}` , 500)
       })
+
+        return "Sent"
+
+      }catch( error : any ){
+         return  new ErrorHandler(`${error.message}` , 500);
+
+      }
 
 }

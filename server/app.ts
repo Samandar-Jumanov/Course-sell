@@ -1,9 +1,10 @@
 import express , { Express , NextFunction, Request , Response } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors"
-import contentRouter from "./routes/content";
 import { connectMongoose } from "./db/connectionMongo";
 import { ErrorMiddleware } from "./middlewares/error";
+import contentRouter from "./routes/content";
+import  userRouter from "./routes/user"
 
 require("dotenv").config();
 
@@ -18,6 +19,7 @@ app.use(cors({
       origin : process.env.ACCESIBLE_PORTS
 }))
 app.use("/user" , contentRouter)
+app.use("/users/account" , userRouter)
 
 
 // routes 
