@@ -7,35 +7,39 @@ import  ErrorHandler  from "../utils/errorHandler"
 
 
 
+
+  
+        
+const accesTokenExpire = parseInt(process.env.ACCESS_TOKEN_EXPIRE as any  )
+const refreshTokenExpire = parseInt(process.env.REFRESH_TOKEN_EXPIRE as any )
+
+
+export  const accesTokenOptions : ITokenOptions = {
+  expires : new Date  (Date.now() * accesTokenExpire  * 60 * 60 *  1000) ,
+  maxAge : accesTokenExpire * 60 * 60 * 1000,
+  httpOnly : true ,
+  sameSite : "lax"
+}
+
+
+
+
+export const refreshTokenOptions  : ITokenOptions = {
+  expires : new Date  (Date.now() * refreshTokenExpire  * 24 *60 * 60 * 1000) ,
+  maxAge : refreshTokenExpire * 24 *60 * 60 * 1000,
+  httpOnly : true ,
+  sameSite : "lax"
+}
+
 export const sendToken = async ( user : IUser , response : Response , statusCode : number  ) =>{
        try {
         const accesToken = await user.signAccesToken();
         const refreshToken = await user.signRefreshToken();
   
-  
-        
-        const accesTokenExpire = parseInt(process.env.ACCESS_TOKEN_EXPIRE as any  )
-        const refreshTokenExpire = parseInt(process.env.REFRESH_TOKEN_EXPIRE as any )
-  
          
         redisClient.set(user._id , JSON.stringify(user));
   
-        const accesTokenOptions : ITokenOptions = {
-          expires : new Date  (Date.now() * accesTokenExpire * 1000) ,
-          maxAge : accesTokenExpire *1000,
-          httpOnly : true ,
-          sameSite : "lax"
-        }
-  
-  
        
-  
-        const refreshTokenOptions  : ITokenOptions = {
-          expires : new Date  (Date.now() * refreshTokenExpire * 1000) ,
-          maxAge : refreshTokenExpire *1000,
-          httpOnly : true ,
-          sameSite : "lax"
-        }
   
         if(process.env.NODE_ENV === "production") {
           accesTokenOptions.secure = true 

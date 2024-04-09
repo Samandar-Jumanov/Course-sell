@@ -6,8 +6,8 @@ import   ErrorHandler  from "../utils/errorHandler"
 import { ErrorType } from "../types/error";
 import { createActivationCode, sendMail } from "../utils/utilFunctions";
 import { IUser } from "../types/user";
-import jwt from "jsonwebtoken";
-import { sendToken } from "../utils/jwt"
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { accesTokenOptions, refreshTokenOptions, sendToken } from "../utils/jwt"
 import { redisClient } from "../db/redis";
  
 export const signUp  = CatchAsyncError( async ( request : Request , response : Response , next : NextFunction) =>{
@@ -132,7 +132,7 @@ export const login = CatchAsyncError(
 
 
 
-export const logOut = async ( request : Request , response : Response , next : NextFunction) =>{
+export const logOut = async ( request : Request | any  , response : Response , next : NextFunction) =>{
         try {
             response.cookie("access_token", "" , { maxAge : 1 })
             response.cookie("refresh_token" , "" , { maxAge : 1 })
@@ -148,3 +148,97 @@ export const logOut = async ( request : Request , response : Response , next : N
 }
 
 
+
+export const updateRefreshToken = CatchAsyncError(
+    async ( request  : Request , response : Response , next : NextFunction) =>{
+       try {
+        
+        const refreshToken = request.cookies.refresh_token;
+        const decodedToken = await jwt.verify(refreshToken , 
+            process.env.REFRESH_TOKEN as string ) as JwtPayload;
+
+
+            if(!decodedToken){
+                   throw new ErrorHandler("Could not refresh token" ,400)
+            };
+
+
+            const session : any  = await redisClient.get(decodedToken.id);
+
+            const user = JSON.parse(session);
+
+            if(!user) {
+                  throw new ErrorHandler("Cannit get user" , 403)
+            };
+
+
+            const accessToken = jwt.sign({  id : user?.id } , process.env.SIGN_ACCES_TOKEN as string  , {
+                expiresIn : "5m"
+            });
+
+            const refresh_Token = jwt.sign({  id : user?.id } , process.env.SIGN_REFRESH_TOKEN as string , {
+                  expiresIn : "3d"
+            } );
+
+
+            response.cookie("acces_token" , accessToken , accesTokenOptions )
+            response.cookie("refresh_token" , refreshToken , refreshTokenOptions )
+
+
+             response.status(200).json({
+                  message : "Success",
+                  accessToken
+             })
+            
+       } catch (error) {
+        
+       }
+})  
+
+
+
+export const getUserById = CatchAsyncError( async ( request : Request , response : Response , next : NextFunction) =>{
+
+       try {
+
+        const userId =  request.params.userId;
+
+        const user = await UserModel.findById(userId);
+
+
+        if(!user){
+             throw new ErrorHandler("Something went wrong" , 500)
+        }
+
+
+        response.status(200).json({
+             user : user
+        })
+
+       }catch( error : any ){
+          throw new ErrorHandler(error.message , 500)
+       }
+})
+
+export const socialAuth = CatchAsyncError( async ( request : Request ,response : Response , next : NextFunction) =>{
+      
+      try {
+
+       const { email , name, password } = request.body
+
+        const user : any  = await UserModel.findOne({
+              email : email
+        })
+
+        if(!user) {
+              const newUser = await UserModel.create(request.body);
+              await sendToken(newUser , response , 201)
+        }
+
+        await sendToken(user , response , 201)
+
+      }catch( error : any ){
+           throw new ErrorHandler(error.message , 500)
+      }
+
+})

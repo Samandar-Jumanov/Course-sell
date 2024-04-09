@@ -81,12 +81,16 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
 
 
 userSchema.methods.SignAccesToken = async function () {
-    return jwt.sign({ id : this._id } , process.env.SIGN_ACCES_TOKEN || "" )
+    return jwt.sign({ id : this._id } , process.env.SIGN_ACCES_TOKEN || ""  , {
+        expiresIn : "5m"
+    })
 
 }
 
 userSchema.methods.SignRefreshToken = async function () {
-    return jwt.sign({ id : this._id } , process.env.SIGN_ACCES_TOKEN || "" )
+    return jwt.sign({ id : this._id } , process.env.SIGN_ACCES_TOKEN || "" , {
+        expiresIn : "3d"
+    } )
 }
 
 

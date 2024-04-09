@@ -1,4 +1,4 @@
-import { Request , Response  } from "express"
+import { NextFunction, Request , Response  } from "express"
 import ErrorHandler from "../utils/errorHandler";
 import jwt , { JwtPayload } from "jsonwebtoken"
 import { UserModel } from "../db/models/user.model"
@@ -37,4 +37,15 @@ export const isAuthenticated = async ( request : Request , response : Response )
     }catch(err : any ){
            throw new ErrorHandler(err.message , 500)
     }
+}
+
+
+export const authanticate = async ( ...roles : string[]) =>{
+          return  (request : Request | any  , response : Response , next : NextFunction) =>{
+                if(!roles.includes(request?.user?.role)) {
+                       return new ErrorHandler("You dont have acces for this page" , 403)
+                }
+
+                next()
+          }
 }
