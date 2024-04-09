@@ -3,6 +3,15 @@ import { saveFileToS3 , getFromS3, deleteFile } from "../utils/s3"
 import { IFileType } from "../types/s3";
 
 
+/*
+1: Lesson --> containes VideoCourse 
+2 : Course --> contains Lesson
+
+
+Thats why wee need to created a courseVidoe --> save the video to db
+then take url and give it lesson 
+then make course 
+*/
 
 
 
