@@ -48,18 +48,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
         default : "User"
     },
 
-    comparePassword: {
-        type: Function,
-        required: [true]
-    },
-
-    signAccesToken : {
-          type : Function 
-    } ,
-
-    signRefreshToken : {
-          type : Function 
-    } 
+   
 
 } , { timestamps : true });
 

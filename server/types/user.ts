@@ -1,4 +1,5 @@
 import { Document } from "mongoose";
+import { IFileType } from "./s3";
 
 
 

@@ -9,14 +9,17 @@ import { IUser } from "../types/user";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { accesTokenOptions, refreshTokenOptions, sendToken } from "../utils/jwt"
 import { redisClient } from "../db/redis";
- 
+import { saveFileToS3 , deleteFromS3 } from "../utils/s3";
+import {  IFileType } from "../types/s3"
+
 export const signUp  = CatchAsyncError( async ( request : Request , response : Response , next : NextFunction) =>{
 
       try {
 
-        const { name , email , password , avatar }  : IUserRegisterBody = request.body
+        const { name , email , password  }  : IUserRegisterBody = request.body
+        const file = request.file
 
-        if(!name || !email || !password ){
+        if(!name || !email || !password  ){
                throw new ErrorHandler("Invalid inputs" , 403 )
         }
 
@@ -27,11 +30,12 @@ export const signUp  = CatchAsyncError( async ( request : Request , response : R
 
 
         if(exisitingUser) {
-            throw new ErrorHandler("Uset with this email already exists", 400)
+            throw new ErrorHandler("User with this email already exists", 400)
         }
         
+        const fileName = file?.originalname
 
-        const activation = createActivationCode({ name, email , password , avatar})
+        const activation = createActivationCode({ name, email , password , fileName })
         const activationCode = (await activation).activationCode
 
 
@@ -70,7 +74,7 @@ CatchAsyncError( async ( request : Request , response : Response , next : NextFu
             }
 
             
-            const { name ,email , password } = newUser.user;
+            const { name ,email , password  , avatar } = newUser.user;
 
 
             const existingUser = await UserModel.findOne({ email : email});
@@ -80,8 +84,15 @@ CatchAsyncError( async ( request : Request , response : Response , next : NextFu
             }
 
 
+            // const userAvatarLink = await saveFileToS3(avatar as IFileType)
+
+            // if(!userAvatarLink.url) {
+            //        return new ErrorHandler("Error saving file 3 bucket "  , 500)
+            // }
+            
+
             await UserModel.create({
-                  name : name , email : email , password : password 
+                  name : name , email : email , password : password , avatar : avatar
             })
 
 
@@ -325,4 +336,41 @@ export const updateUserPassword = CatchAsyncError ( async ( request : Request , 
  } catch (error) {
     
  }
+})
+
+
+
+export const updatUserAvatar = CatchAsyncError ( async ( request : Request , response : Response  , next : NextFunction) =>{
+       const { userId }  = request.params ;
+       const  file : IFileType  | any  = request.file
+
+
+         try {
+
+
+            const user  : IUser | any  = await UserModel.findById(userId);
+
+            if(!user) {
+                  return new ErrorHandler("User not found" , 404)
+            }
+
+            const image = await saveFileToS3(file as IFileType);
+            if(user.avatar !== "Default Image"){
+              await deleteFromS3(user.avatar);
+            }
+
+            
+           if(user.avatar) {
+                user.avatar = image.url
+           }
+
+            response.status(201).json({
+               message : "Updated",
+               success : true 
+            })
+
+
+         }catch( error : any ) {
+
+         }
 })

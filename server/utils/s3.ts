@@ -110,7 +110,7 @@ export const getFromS3 = async ( url  :string ) : Promise<IS3Response>   =>{
 
 
 
-export const deleFromS3  = async ( videoUrl : string ) : Promise<IS3Response> =>{
+export const deleteFromS3  = async ( videoUrl : string ) : Promise<IS3Response> =>{
 
 
     const response : IS3Response = {
