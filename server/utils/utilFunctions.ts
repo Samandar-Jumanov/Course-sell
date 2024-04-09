@@ -32,6 +32,25 @@ export const createActivationCode = async ( user : IUser | any  ) : Promise<IAct
 }
 
 
+
+export const sendMail = ( sendTo : string , name : string , code: string  )  =>{
+
+const activationEmailBody =` 
+<div class="container" style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; border-radius: 8px;">
+    <h2 style="color: #333; text-align: center;">Email Activation Code</h2>
+    <h2 style="color: #007bff; text-align: center;">Hello ${name}</h2>
+
+    <div style="margin-top: 20px; text-align: center;">
+        <p style="margin-bottom: 10px;">Activation Code: <strong>${code}</strong></p>
+        <p>Use the activation code above to activate your account.</p>
+    </div>
+
+    <button style="display: block; width: 100%; padding: 10px; margin-top: 20px; background-color: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Activate</button>
+</div>
+`
+
+
+
 const transporter = nodemailer.createTransport({
     pool: true,
     service: 'hotmail',
@@ -40,92 +59,7 @@ const transporter = nodemailer.createTransport({
       user: 'samandarjumanov@outlook.com',
       pass: process.env.EMAIL_PASSWORD
     },
-    maxConnections: 1
   })
-
-
-export const sendMail = ( sendTo : string , name : string , code: string  )  =>{
-
-const activationEmailBody =` 
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Activation Code</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .container {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
-        }
-
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #007BFF;
-            color: #ffffff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-    </style>
-</head>
-
-<body>
-
-    <div class="container">
-        <h2>Email Activation Code</h2>
-        <h2>Hello${name}</h2>
-
-        <form action="#" method="post">
-            <label for="activationCode">Activation Code: ${code}></label>
-            <input type="text" id="activationCode" name="activationCode" required>
-
-            <button type="submit">Activate</button>
-        </form>
-    </div>
-
-</body>
-
-</html>
-
-`
   
  
     const mailOptions = {
@@ -139,9 +73,14 @@ const activationEmailBody =`
       try {
           
       transporter.sendMail(mailOptions, (error: any, info: any) => {
-         if(error) return  new ErrorHandler(`${error.message}` , 500)
+         if(error) {
+            console.log(error.message)
+            return  new ErrorHandler(`${error.message}` , 500)
+         }
+         console.log(info)
       })
 
+      
         return "Sent"
 
       }catch( error : any ){

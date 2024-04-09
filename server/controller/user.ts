@@ -9,10 +9,10 @@ import { IUser } from "../types/user";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { accesTokenOptions, refreshTokenOptions, sendToken } from "../utils/jwt"
 import { redisClient } from "../db/redis";
-import { saveFileToS3 , deleteFromS3 } from "../utils/s3";
+import { saveFileToS3 , deleteFile } from "../utils/s3";
 import {  IFileType } from "../types/s3"
 
-export const signUp  = CatchAsyncError( async ( request : Request , response : Response , next : NextFunction) =>{
+export const signUp  = async ( request : Request , response : Response , next : NextFunction) =>{
 
       try {
 
@@ -53,61 +53,52 @@ export const signUp  = CatchAsyncError( async ( request : Request , response : R
           return next(new ErrorHandler(error.message , 400))
       }
 
-})
+}
 
 
 
-
-export const activateUser = 
-CatchAsyncError( async ( request : Request , response : Response , next : NextFunction) =>{
-
+export const activateUser = async (request: Request, response: Response, next: NextFunction) => {
       try {
-
-            const { token , code  } = request.body
-
-            const newUser : { user : IUser , code : string } = jwt.verify(token , process.env.ACTIVATION_KEY as string )  as { user : IUser , code : string };
-
-
-
-            if(!newUser.code !== code ){
-                throw new ErrorHandler("Incorrect activation code " , 403)
-            }
-
-            
-            const { name ,email , password  , avatar } = newUser.user;
-
-
-            const existingUser = await UserModel.findOne({ email : email});
-
-            if(existingUser) {
-                throw new ErrorHandler("User already exists this email adress" , 403)
-            }
-
-
-            // const userAvatarLink = await saveFileToS3(avatar as IFileType)
-
-            // if(!userAvatarLink.url) {
-            //        return new ErrorHandler("Error saving file 3 bucket "  , 500)
-            // }
-            
-
-            await UserModel.create({
-                  name : name , email : email , password : password , avatar : avatar
-            })
-
-
-            response.status(201).json({
-                 message : "Created",
-                 success : true 
-            })
-      
-      }catch(err : any ){
-           throw new ErrorHandler(err.message , 500)
+          const { token, code } = request.body;
+  
+          const newUser: { user: IUser, code: string } = jwt.verify(token, process.env.ACTIVATION_KEY as string) as { user: IUser, code: string };
+  
+          console.log({
+              requestCOde : code ,
+              code : code 
+          })
+          if (newUser.code !== code) {
+              throw new ErrorHandler("Incorrect activation code", 403);
+          }
+  
+          const { name, email, password, avatar } = newUser.user;
+  
+          const existingUser = await UserModel.findOne({ email: email });
+  
+          if (existingUser) {
+              throw new ErrorHandler("User already exists with this email address", 403);
+          }
+  
+          // const userAvatarLink = await saveFileToS3(avatar as IFileType);
+  
+          // if (!userAvatarLink.url) {
+          //     return new ErrorHandler("Error saving file to S3 bucket", 500);
+          // }
+  
+          await UserModel.create({
+              name: name, email: email, password: password, avatar: avatar
+          });
+  
+          response.status(201).json({
+              message: "Created",
+              success: true
+          });
+  
+      } catch (err: any) {
+          throw new ErrorHandler(err.message, 500);
       }
-
-})
-
-
+  }
+  
 
 export const login = CatchAsyncError( 
     async ( request : Request , response : Response , next : NextFunction) =>{
@@ -356,7 +347,7 @@ export const updatUserAvatar = CatchAsyncError ( async ( request : Request , res
 
             const image = await saveFileToS3(file as IFileType);
             if(user.avatar !== "Default Image"){
-              await deleteFromS3(user.avatar);
+              await deleteFile(user.avatar);
             }
 
             
