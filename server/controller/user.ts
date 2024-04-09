@@ -35,7 +35,7 @@ export const signUp  = CatchAsyncError( async ( request : Request , response : R
         const activationCode = (await activation).activationCode
 
 
-          const res  : string | ErrorHandler =  sendMail( email , name , activationCode) as string
+        const res  : string | ErrorHandler =  sendMail( email , name , activationCode) as string
               
 
           response.status(201).json({
@@ -241,4 +241,88 @@ export const socialAuth = CatchAsyncError( async ( request : Request ,response :
            throw new ErrorHandler(error.message , 500)
       }
 
+})
+
+
+
+export const updateUserInfo = CatchAsyncError ( async ( request : Request , response : Response , next : NextFunction) =>{
+
+     try {
+
+        const { email , name } = request.body
+        const userId = request.params.userId;
+
+        const user  : any = await UserModel.findById(userId)
+
+        const isEmailExists = await UserModel.findOne(email);
+
+
+        if(isEmailExists) {
+              throw new ErrorHandler("Try different email" , 403)
+        }
+
+        if((user && !isEmailExists)  && name ) {
+               user.email = email
+               user.name = name 
+        }
+
+
+        await user.save()
+        response.status(201).json({
+            message : "Updated",
+            success : true ,
+            user : user 
+        })
+       
+
+     }catch(error : any ){
+          throw new ErrorHandler(error.message , 500)
+     }
+})
+
+
+
+
+export const updateUserPassword = CatchAsyncError ( async ( request : Request , response : Response ) =>{
+     
+ try {
+    
+    const { oldPassword , newPassword } = request.body;
+    const userId = request.params.userId;
+
+
+    const user = await UserModel.findById(userId);
+
+
+    if(!user) {
+          return new ErrorHandler('User not found ' , 404)
+    };
+
+
+
+    const isPasswordMatch = await user.comparePassword(oldPassword);
+
+
+    if(!isPasswordMatch) {
+          return new ErrorHandler("Password did not match" , 403)
+    };
+
+    if(!user.password){
+          return new ErrorHandler("User does not have password" , 400)
+    }
+
+
+    user.password = newPassword 
+    await user.save();
+   
+
+
+    response.status(201).json({
+         message : "Updated",
+         success : true 
+    })
+
+ } catch (error) {
+    
+ }
 })
