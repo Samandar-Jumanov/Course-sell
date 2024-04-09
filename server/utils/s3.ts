@@ -89,11 +89,11 @@ export const getFromS3 = async ( url  :string ) : Promise<IS3Response>   =>{
         }
    
         const command = new GetObjectCommand(objectParams);
-        const videoUrl  : string = await getSignedUrl( s3 , command )
+        const fileUrl  : string = await getSignedUrl( s3 , command )
 
 
         response.message = "Success"
-        response.url =  videoUrl
+        response.url =  fileUrl
         response.success = true 
 
         return response 
@@ -110,7 +110,7 @@ export const getFromS3 = async ( url  :string ) : Promise<IS3Response>   =>{
 
 
 
-export const deleteFile  = async ( videoUrl : string ) : Promise<IS3Response> =>{
+export const deleteFile  = async ( fileUrl : string ) : Promise<IS3Response> =>{
 
 
     const response : IS3Response = {
@@ -122,7 +122,7 @@ export const deleteFile  = async ( videoUrl : string ) : Promise<IS3Response> =>
 
             const deleteParams = {
                 Bucket : bucketName,
-                Key : videoUrl, 
+                Key : fileUrl, 
             }
         
         
