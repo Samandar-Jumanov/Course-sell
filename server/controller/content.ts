@@ -1,5 +1,5 @@
 import { Request , Response ,NextFunction } from "express"
-import { saveFileToS3 , getFromS3, deleFromS3 } from "../utils/s3"
+import { saveFileToS3 , getFromS3, deleteFile } from "../utils/s3"
 import { IFileType } from "../types/s3";
 
 
@@ -55,7 +55,7 @@ export const deletePost = async ( request : Request , response : Response , next
 
 
 
-      await deleFromS3("" )
+      await deleteFile("" )
 
 
     // delete post from database ;

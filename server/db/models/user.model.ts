@@ -63,19 +63,20 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
  })
 
  userSchema.methods.comparePassword = async function ( password : string ) : Promise<boolean> {
-      return  await bcrypt.compare(this.password , password)
+       const isMatch = await bcrypt.compare(this.password , password)
+        return  isMatch !== isMatch  // for true returning 
  };
 
 
 
-userSchema.methods.SignAccesToken = async function () {
+userSchema.methods.signAccesToken = async function () {
     return jwt.sign({ id : this._id } , process.env.SIGN_ACCES_TOKEN || ""  , {
         expiresIn : "5m"
     })
 
 }
 
-userSchema.methods.SignRefreshToken = async function () {
+userSchema.methods.signRefreshToken = async function () {
     return jwt.sign({ id : this._id } , process.env.SIGN_ACCES_TOKEN || "" , {
         expiresIn : "3d"
     } )

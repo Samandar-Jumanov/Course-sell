@@ -79,11 +79,11 @@ export const activateUser = async (request: Request, response: Response, next: N
               throw new ErrorHandler("User already exists with this email address", 403);
           }
   
-          // const userAvatarLink = await saveFileToS3(avatar as IFileType);
+        //   const userAvatarLink = await saveFileToS3(avatar as IFileType);
   
-          // if (!userAvatarLink.url) {
-          //     return new ErrorHandler("Error saving file to S3 bucket", 500);
-          // }
+        //   if (!userAvatarLink.url) {
+        //       return new ErrorHandler("Error saving file to S3 bucket", 500);
+        //   }
   
           await UserModel.create({
               name: name, email: email, password: password, avatar: avatar
@@ -100,7 +100,7 @@ export const activateUser = async (request: Request, response: Response, next: N
   }
   
 
-export const login = CatchAsyncError( 
+export const login = 
     async ( request : Request , response : Response , next : NextFunction) =>{
     
          try {
@@ -130,7 +130,7 @@ export const login = CatchAsyncError(
          }catch(error : any ){
               throw new ErrorHandler(error.message , 500)
          }
-});
+}
 
 
 
@@ -151,13 +151,15 @@ export const logOut = async ( request : Request | any  , response : Response , n
 
 
 
-export const updateRefreshToken = CatchAsyncError(
+export const updateRefreshToken = 
     async ( request  : Request , response : Response , next : NextFunction) =>{
        try {
         
+        console.log('Request come')
         const refreshToken = request.cookies.refresh_token;
+        
         const decodedToken = await jwt.verify(refreshToken , 
-            process.env.REFRESH_TOKEN as string ) as JwtPayload;
+            process.env.SIGN_REFRESH_TOKEN as string ) as JwtPayload;
 
 
             if(!decodedToken){
@@ -170,7 +172,7 @@ export const updateRefreshToken = CatchAsyncError(
             const user = JSON.parse(session);
 
             if(!user) {
-                  throw new ErrorHandler("Cannit get user" , 403)
+                  throw new ErrorHandler("Cannot get user" , 403)
             };
 
 
@@ -195,11 +197,11 @@ export const updateRefreshToken = CatchAsyncError(
        } catch (error) {
         
        }
-})  
+} 
 
 
 
-export const getUserById = CatchAsyncError( async ( request : Request , response : Response , next : NextFunction) =>{
+export const getUserById =  async ( request : Request , response : Response , next : NextFunction) =>{
 
        try {
 
@@ -220,9 +222,9 @@ export const getUserById = CatchAsyncError( async ( request : Request , response
        }catch( error : any ){
           throw new ErrorHandler(error.message , 500)
        }
-})
+}
 
-export const socialAuth = CatchAsyncError( async ( request : Request ,response : Response , next : NextFunction) =>{
+export const socialAuth =  async ( request : Request ,response : Response , next : NextFunction) =>{
       
       try {
 
@@ -243,11 +245,11 @@ export const socialAuth = CatchAsyncError( async ( request : Request ,response :
            throw new ErrorHandler(error.message , 500)
       }
 
-})
+}
 
 
 
-export const updateUserInfo = CatchAsyncError ( async ( request : Request , response : Response , next : NextFunction) =>{
+export const updateUserInfo =  async ( request : Request , response : Response , next : NextFunction) =>{
 
      try {
 
@@ -280,12 +282,12 @@ export const updateUserInfo = CatchAsyncError ( async ( request : Request , resp
      }catch(error : any ){
           throw new ErrorHandler(error.message , 500)
      }
-})
+}
 
 
 
 
-export const updateUserPassword = CatchAsyncError ( async ( request : Request , response : Response ) =>{
+export const updateUserPassword =  async ( request : Request , response : Response ) =>{
      
  try {
     
@@ -327,11 +329,11 @@ export const updateUserPassword = CatchAsyncError ( async ( request : Request , 
  } catch (error) {
     
  }
-})
+}
 
 
 
-export const updatUserAvatar = CatchAsyncError ( async ( request : Request , response : Response  , next : NextFunction) =>{
+export const updatUserAvatar =  async ( request : Request , response : Response  , next : NextFunction) =>{
        const { userId }  = request.params ;
        const  file : IFileType  | any  = request.file
 
@@ -364,4 +366,4 @@ export const updatUserAvatar = CatchAsyncError ( async ( request : Request , res
          }catch( error : any ) {
 
          }
-})
+}
