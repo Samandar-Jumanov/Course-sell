@@ -22,12 +22,14 @@ export interface ICourseVideo extends Document {
 export interface ILesson {
 
       title : string,
-      videos : ICourseVideo[]
+      videos : ICourseVideo[],
+      owner  : IUser ,
 
 }
 
 export interface ICourse extends Document {
-
+    
+    _id : string,
     title : string,
     description :string ,
     lessons : ILesson[],
@@ -38,7 +40,8 @@ export interface ICourse extends Document {
     level : string,
     prerequisites : string[],
     usersPurchased : number 
-
-
+    instructor: IUser
 }
+
+
 

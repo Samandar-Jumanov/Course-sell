@@ -105,7 +105,8 @@ export const login =
     
          try {
               
-        const { email , password} = request.body;
+         const { email , password} = request.body;
+
 
         if(!email || !password) {
                throw new ErrorHandler("Invalid inouts" , 400)
@@ -122,9 +123,11 @@ export const login =
 
         const isPasswordMatch = await user.comparePassword(password);
 
-        if(!isPasswordMatch) {
+        if(isPasswordMatch) {
               throw new ErrorHandler("Invalid password" , 403)
         }
+
+        console.log(user)
 
           await sendToken(user , response , 200)
          }catch(error : any ){

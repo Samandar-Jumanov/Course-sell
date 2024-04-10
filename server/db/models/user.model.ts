@@ -1,4 +1,4 @@
-import mongoose, { Schema , Model } from "mongoose";
+import mongoose, { Schema , Model , Types  } from "mongoose";
 import { IUser } from "../../types/user";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken"
@@ -40,7 +40,13 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     },
 
     courses:[ {
-        courseId : String 
+        type: Types.ObjectId,
+        ref: 'Course'
+    }],
+
+    lessons: [{
+        type: Types.ObjectId,
+        ref: 'Lesson'
     }],
 
     role : {
@@ -64,7 +70,7 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
 
  userSchema.methods.comparePassword = async function ( password : string ) : Promise<boolean> {
        const isMatch = await bcrypt.compare(this.password , password)
-        return  isMatch !== isMatch  // for true returning 
+        return  isMatch    // for true returning 
  };
 
 

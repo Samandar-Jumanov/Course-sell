@@ -10,6 +10,7 @@ export interface IUser extends Document {
      avatar : string ,
      isVerified : boolean,
      role : string ,
+     lessons : string[] | any 
      courses : Array<{ courseId : string }>
      comparePassword : ( password : string ) => Promise<boolean>,
      signAccesToken : ( ) => string ,

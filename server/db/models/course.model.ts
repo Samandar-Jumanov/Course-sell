@@ -19,10 +19,12 @@ const courseVideoSchema = new Schema<ICourseVideo>({
         type: Number,
         required: true
     },
+
     videoUrl: {
         type: String,
         required: true
     },
+    
     isDemo: {
         type: Boolean,
         default: false
@@ -37,7 +39,12 @@ const lessonSchema = new Schema<ILesson>({
     videos: [{
         type: Types.ObjectId,
         ref: 'CourseVideo'
-    }]
+    }],
+    owner : {
+          type : Types.ObjectId,
+          ref : "User"
+    }
+
 });
 
 const courseSchema = new Schema<ICourse>({
@@ -50,10 +57,18 @@ const courseSchema = new Schema<ICourse>({
         type: String,
         required: true
     },
+
+    instructor : {
+        type : Types.ObjectId,
+        ref : "User"
+    },
+
+    
     lessons: [{
         type: Types.ObjectId,
         ref: 'Lesson'
     }],
+
     comments: [{
         type: Types.ObjectId,
         ref: 'Comment'

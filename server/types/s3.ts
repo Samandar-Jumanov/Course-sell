@@ -19,4 +19,5 @@ export type IS3Response = {
       success : boolean   ,
       message : string   ,
       result ? : string  | any 
+      url : string 
 }
