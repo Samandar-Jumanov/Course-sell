@@ -40,7 +40,7 @@ app.all("*" , ( request : Request , response : Response , next : NextFunction  )
 
 
 connectMongoose().then(res =>{
-          app.listen(3000 , () => console.log("Server started"));
+          app.listen(3001 , () => console.log("Server started"));
           
 }).catch(err =>{
           console.log(err)

@@ -32,7 +32,7 @@ export const saveFileToS3 = async  ( file : IFileType ) : Promise<IS3Response> =
     const response : IS3Response = { 
         success : false,
         message : "Failed",
-        url : ""
+        result : ""
     }
 
 
@@ -51,11 +51,11 @@ export const saveFileToS3 = async  ( file : IFileType ) : Promise<IS3Response> =
 
       const command =  new PutObjectCommand(params);
 
-      await s3.send(command);
+       const result =  await s3.send(command);
        
       response.success = true ,
       response.message = "Success"
-      response.url = fileName
+      response.result = result
 
       return  response;
       
@@ -77,7 +77,7 @@ export const getFromS3 = async ( url  :string ) : Promise<IS3Response>   =>{
 
     const response : IS3Response = {
          message : "",
-         url : "",
+         result : "",
          success : false 
     }
    
@@ -93,7 +93,7 @@ export const getFromS3 = async ( url  :string ) : Promise<IS3Response>   =>{
 
 
         response.message = "Success"
-        response.url =  fileUrl
+        response.result =  fileUrl
         response.success = true 
 
         return response 

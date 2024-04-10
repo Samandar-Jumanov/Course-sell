@@ -1,7 +1,7 @@
 import { Request , Response ,NextFunction } from "express"
 import { saveFileToS3 , getFromS3, deleteFile } from "../utils/s3"
 import { IFileType } from "../types/s3";
-
+import { CourseVideoModel , LessonModel , CommentModel ,CourseModel } from "../db/models/course.model"
 
 /*
 1: Lesson --> containes VideoCourse 
@@ -26,11 +26,20 @@ async ( request : Request , response : Response , next : NextFunction ) =>{
          throw new Error(res.message)
     }
 
+    console.log(res.result.metadata)
+
+//     const video = await CourseVideoModel.create({
+          
+//     })
 
 
      // Save the data to database with the name of file !;
 
 
+
+     response.status(201).json({
+            message : "Success"
+     })
 }
 
 

@@ -4,7 +4,7 @@ import multerUpload from "../utils/multer";
 
 const contentRouter = Router();
 
-contentRouter.post("/course/upload" , multerUpload.single("video") , upload);
+contentRouter.post("/course/upload" , multerUpload.single("file") , upload);
 
 export default contentRouter;
 

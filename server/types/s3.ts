@@ -18,5 +18,5 @@ export type  IFileType = {
 export type IS3Response = {
       success : boolean   ,
       message : string   ,
-      url ? : string 
+      result ? : string  | any 
 }
