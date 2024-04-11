@@ -83,11 +83,19 @@ export const getUserCourses = async ( request : Request , response : Response ) 
 
             const userId =  request.params.userId ;
 
-            const user = await UserModel.findById(userId).select("courses")
+            const user = await UserModel.findById(userId).populate("courses")
 
             if(!user) {
                  throw new ErrorHandler("User not found ", 404)
             }
+
+            // let userCourses = []
+
+            // for(const c of user.courses) {
+            //       let course = await CourseModel.findById(c)
+            //       userCourses.push(course)
+            // };
+
 
             response.status(200).json({
                  message : "User courses retirieved successfully",
@@ -114,7 +122,7 @@ export const deleteUserCourse = async (request: Request, response: Response) => 
             throw new ErrorHandler("User not found", 404);
         }
 
-        const index = user.courses.findIndex(course => course.courseId.toString() === courseId);
+        const index = user.courses.findIndex(course => course.courseId === courseId);
 
         if (index === -1) {
             throw new ErrorHandler("Course not found in user's courses", 404);

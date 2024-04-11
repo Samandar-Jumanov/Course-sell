@@ -5,6 +5,8 @@ import ErrorHandler from '../utils/errorHandler';
 import { startSession } from 'mongoose';
 import { UserModel } from '../db/models/user.model';
 import { IFileType } from '../types/s3';
+import mongoose from "mongoose";
+
 
 export const createLesson = async (
   request: Request,
@@ -16,7 +18,7 @@ export const createLesson = async (
   try {
     session.startTransaction();
 
-    const file : IFileType  | any = request.file;
+    let  file : IFileType  | any = request.file;
     console.log(file);
 
     if(!file) {
@@ -24,7 +26,7 @@ export const createLesson = async (
     }
 
 
-    const { title, isDemo } = request.body;
+    const { title, isDemo  , description } = request.body;
     const userId: string = request.params.userId;
 
     const user = await UserModel.findById(userId).select('lessons');
@@ -46,14 +48,16 @@ export const createLesson = async (
 
     const courseVideo = await CourseVideoModel.create({
       videoLength: 120,
-      videoUrl: ServerSideEncryption,
+      videoUrl: savedFileRes.url,
       isDemo: isDemo
     });
 
     const lesson = await LessonModel.create({
-      title: title,
-      owner: user._id
-    });
+      title: title || "Deafult title", 
+      owner: user._id,
+      description : "Description "
+    }); 
+
 
     lesson.videos.push(courseVideo._id);
     user.lessons.push(lesson._id);
@@ -64,7 +68,7 @@ export const createLesson = async (
     console.log({
       video: courseVideo,
       lesson: lesson,
-      user: user
+      user: user.lessons
     });
 
     await session.commitTransaction();
@@ -122,62 +126,62 @@ export const getUserLessons = async (
   };
 
   export const deleteLesson = async (
-    
     request: Request,
     response: Response,
     next: NextFunction
-
 ) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
         const userId = request.params.userId;
         const lessonId = request.params.lessonId;
 
-        const user = await UserModel.findById(userId);
+        const user = await UserModel.findById(userId).session(session);
         if (!user) {
             throw new ErrorHandler('User not found', 404);
         }
 
-        const lesson = await LessonModel.findById(lessonId).select('videos');
+        const lesson = await LessonModel.findById(lessonId)
+            .populate('videos')
+            .session(session);
         if (!lesson) {
             throw new ErrorHandler('Lesson not found', 404);
         }
 
-        if (!user.lessons.includes(lessonId)) {
-            throw new ErrorHandler('Lesson does not belong to the user', 403);
-        }
-
-        // Delete associated videos from AWS S3 bucket
+       
         const videoUrls = lesson.videos.map(video => video.videoUrl);
         for (const videoUrl of videoUrls) {
             await deleteFile(videoUrl);
         }
 
-        // Delete video documents from CourseVideoModel
-        await CourseVideoModel.deleteMany({ _id: { $in: lesson.videos } });
+        await CourseVideoModel.deleteMany({ _id: { $in: lesson.videos } }).session(session);
 
-        // Remove lesson from the user's lessons array
         user.lessons.pull(lessonId);
         await user.save();
 
-        // Delete the lesson
-        await lesson.deleteOne();
+        await lesson.deleteOne().session(session);
+
+        await session.commitTransaction();
+        session.endSession();
 
         response.status(200).json({
-            message: 'Lesson deleted successfully',
             success: true,
+            message: 'Lesson deleted successfully',
             deletedLesson: lesson
         });
 
     } catch (error: any) {
-        console.log({
+        console.error({
             deleteLessonError: error.message,
         });
+
+        await session.abortTransaction();
+        session.endSession();
 
         throw new ErrorHandler(error.message, error.status || 500);
     }
 };
-
-
 
 
 
@@ -208,7 +212,7 @@ export const getUserLessons = async (
 
 
 
-          await lesson.updateOne({
+          const updatedLesson  = await LessonModel.updateOne({
              title : title ,
              description : description
           })
@@ -217,7 +221,9 @@ export const getUserLessons = async (
              message : "Lesson updated successfully",
              lesson : lesson 
 
-          })
+          });
+
+
          }catch( error : any ){
                 console.log({
                     lessonUpdatingError : error.message

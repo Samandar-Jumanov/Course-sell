@@ -24,6 +24,7 @@ export interface ILesson {
       title : string,
       videos : ICourseVideo[],
       owner  : IUser ,
+      description : string 
 
 }
 

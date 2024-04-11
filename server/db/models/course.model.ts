@@ -20,10 +20,12 @@ const courseVideoSchema = new Schema<ICourseVideo>({
         type: Number,
         required: true
     },
+
     videoUrl: {
         type: String,
         required: true
     },
+
     isDemo: {
         type: Boolean,
         default: false
@@ -42,6 +44,10 @@ const lessonSchema = new Schema<ILesson>({
     owner : {
           type : Types.ObjectId,
           ref : "User"
+    },
+    description : {
+          type : Types.ObjectId,
+          required : true 
     }
 });
 

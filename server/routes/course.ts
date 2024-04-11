@@ -4,8 +4,8 @@ import { createCourse , deleteUserCourse  , getUserCourses} from "../controller/
 const courseController = Router();
 
 courseController.post("/course/createCourse/:userId" , createCourse);
-courseController.delete("/course/createCourse/:userId/:courseId" , deleteUserCourse);
-courseController.get("/course/createCourse/:userId" , getUserCourses);
+courseController.delete("/course/delete/:userId/:courseId" , deleteUserCourse);
+courseController.get("/course/get/:userId" , getUserCourses);
 
 
 
