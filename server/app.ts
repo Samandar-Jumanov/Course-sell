@@ -20,6 +20,7 @@ app.use(cors({
       origin: '*',
       methods: ['POST', 'GET', 'PUT', 'DELETE'],
       allowedHeaders: ['Content-Type', 'Authorization'],
+
     }));
 
 app.use("/user" , contentRouter)

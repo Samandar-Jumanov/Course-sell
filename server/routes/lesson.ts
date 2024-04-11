@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { createLesson  , getUserLessons , deleteLesson} from "../controller/lesson"
-import { multerUpload } from "../utils/multer";
+import multerUpload from "../utils/multer"
 
 const lessonRouter = Router();
 
