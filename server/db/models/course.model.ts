@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
+import { NextFunction, Request, Response } from "express";
 import { IComment, ICourseVideo, ILesson, ICourse } from "../../types/course";
 
 // Define comment schema
@@ -19,12 +20,10 @@ const courseVideoSchema = new Schema<ICourseVideo>({
         type: Number,
         required: true
     },
-
     videoUrl: {
         type: String,
         required: true
     },
-    
     isDemo: {
         type: Boolean,
         default: false
@@ -44,7 +43,6 @@ const lessonSchema = new Schema<ILesson>({
           type : Types.ObjectId,
           ref : "User"
     }
-
 });
 
 const courseSchema = new Schema<ICourse>({
@@ -57,18 +55,14 @@ const courseSchema = new Schema<ICourse>({
         type: String,
         required: true
     },
-
     instructor : {
         type : Types.ObjectId,
         ref : "User"
     },
-
-    
     lessons: [{
         type: Types.ObjectId,
         ref: 'Lesson'
     }],
-
     comments: [{
         type: Types.ObjectId,
         ref: 'Comment'
@@ -95,14 +89,18 @@ const courseSchema = new Schema<ICourse>({
     },
     usersPurchased: {
         type: Number,
-        default : 0
+        default: 0
     }
 });
 
 const CommentModel = mongoose.model<IComment & Document>("Comment", commentSchema);
 const CourseVideoModel = mongoose.model<ICourseVideo & Document>("CourseVideo", courseVideoSchema);
-const LessonModel = mongoose.model<ILesson & Document>("Lesson", lessonSchema as any );
+const LessonModel = mongoose.model<ILesson & Document>("Lesson", lessonSchema as ILesson | any );
 const CourseModel = mongoose.model<ICourse & Document>("Course", courseSchema);
+
+
+
+
 
 // Export models
 export {

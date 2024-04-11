@@ -73,3 +73,69 @@ export const createCourse = async (request: Request, response: Response) => {
         response.status(500).json({ message: 'Failed to create course' });
     }
 };
+
+
+
+export const getUserCourses = async ( request : Request , response : Response ) =>{
+
+
+           try {
+
+            const userId =  request.params.userId ;
+
+            const user = await UserModel.findById(userId).select("courses")
+
+            if(!user) {
+                 throw new ErrorHandler("User not found ", 404)
+            }
+
+            response.status(200).json({
+                 message : "User courses retirieved successfully",
+                 courses : user.courses
+            })
+
+           }catch( error : any ){
+             console.log({
+                  coures : error.message
+             })
+            throw new ErrorHandler('Internal server error' , 500)
+
+           }
+
+}
+
+export const deleteUserCourse = async (request: Request, response: Response) => {
+    const { userId, courseId } = request.params;
+
+    try {
+        const user = await UserModel.findById(userId).select("courses");
+
+        if (!user) {
+            throw new ErrorHandler("User not found", 404);
+        }
+
+        const index = user.courses.findIndex(course => course.courseId.toString() === courseId);
+
+        if (index === -1) {
+            throw new ErrorHandler("Course not found in user's courses", 404);
+        }
+
+        user.courses.splice(index, 1);
+
+        await CourseModel.deleteOne({ _id: courseId });
+
+        await user.save();
+
+        response.status(200).json({
+            message: "Deleted",
+            success: true
+        });
+
+    } catch (error: any) {
+        console.log({
+            error: error.message
+        });
+
+        throw new ErrorHandler(error.message, 500);
+    }
+};

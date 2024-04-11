@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { CourseVideoModel, LessonModel  } from '../db/models/course.model';
+import { CourseVideoModel, LessonModel   } from '../db/models/course.model';
 import { saveFileToS3 , deleteFile } from '../utils/s3';
 import ErrorHandler from '../utils/errorHandler';
 import { startSession } from 'mongoose';
@@ -121,56 +121,110 @@ export const getUserLessons = async (
     }
   };
 
-
   export const deleteLesson = async (
+    
     request: Request,
     response: Response,
     next: NextFunction
-  ) => {
+
+) => {
     try {
+        const userId = request.params.userId;
+        const lessonId = request.params.lessonId;
 
-      const userId = request.params.userId;
-      const lessonId = request.params.lessonId;
-  
-      const user = await UserModel.findById(userId);
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            throw new ErrorHandler('User not found', 404);
+        }
 
-      if (!user) {
-        throw new ErrorHandler('User not found', 404);
-      }
-  
-      const lesson = await LessonModel.findById(lessonId).populate('videos');
-      if (!lesson) {
-        throw new ErrorHandler('Lesson not found', 404);
-      }
-  
-      if (!user.lessons.includes(lessonId)) {
-        throw new ErrorHandler('Lesson does not belong to the user', 403);
-      }
-  
-      // Delete associated videos from AWS S3 bucket
-      for (const video of lesson.videos) {
-        const res =  await deleteFile(video.videoUrl); // Assuming video has 'videoUrl' field which stores the S3 URL
-        console.log(res)
-      }
-  
-      // Remove lesson from the user's lessons array
-      user.lessons.pull(lessonId);
-      await user.save();
-  
-      // Delete the lesson
-      await lesson.deleteOne();
-  
-      response.status(200).json({
-        message: 'Lesson deleted successfully',
-        success: true,
-        deletedLesson: lesson
-      });
-  
+        const lesson = await LessonModel.findById(lessonId).select('videos');
+        if (!lesson) {
+            throw new ErrorHandler('Lesson not found', 404);
+        }
+
+        if (!user.lessons.includes(lessonId)) {
+            throw new ErrorHandler('Lesson does not belong to the user', 403);
+        }
+
+        // Delete associated videos from AWS S3 bucket
+        const videoUrls = lesson.videos.map(video => video.videoUrl);
+        for (const videoUrl of videoUrls) {
+            await deleteFile(videoUrl);
+        }
+
+        // Delete video documents from CourseVideoModel
+        await CourseVideoModel.deleteMany({ _id: { $in: lesson.videos } });
+
+        // Remove lesson from the user's lessons array
+        user.lessons.pull(lessonId);
+        await user.save();
+
+        // Delete the lesson
+        await lesson.deleteOne();
+
+        response.status(200).json({
+            message: 'Lesson deleted successfully',
+            success: true,
+            deletedLesson: lesson
+        });
+
     } catch (error: any) {
-      console.log({
-        deleteLessonError: error.message,
-      });
-  
-      throw new ErrorHandler(error.message, error.status || 500);
+        console.log({
+            deleteLessonError: error.message,
+        });
+
+        throw new ErrorHandler(error.message, error.status || 500);
     }
+};
+
+
+
+
+
+  export const updateUserLesson = async ( request : Request , response : Response ) =>{
+     
+        const { title , description } = request.body;
+        const { userId , lessonId } = request.params;
+
+
+         try {
+
+
+          const user  : any = await UserModel.findById(userId).select("lessons");
+
+          for(const lesson of user.lessons){
+                 if(lesson._id !== lessonId){
+                     throw new ErrorHandler("User doesnt have access to this request" , 403)
+                 }
+          }
+
+
+          const lesson = await LessonModel.findById(lessonId);
+
+
+          if(!lesson){
+              throw new ErrorHandler("Invalid  lesson request",500)
+          }
+
+
+
+          await lesson.updateOne({
+             title : title ,
+             description : description
+          })
+
+          response.status(200).json({
+             message : "Lesson updated successfully",
+             lesson : lesson 
+
+          })
+         }catch( error : any ){
+                console.log({
+                    lessonUpdatingError : error.message
+                })
+                throw new ErrorHandler(error.message , 500)
+         }
   };
+
+
+  
