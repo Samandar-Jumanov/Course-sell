@@ -30,10 +30,13 @@ export const createLesson = async (
 
 
     const savedFileRes = await saveFileToS3(file);
+ 
+    const { '$metadata': metadata, ETag, ServerSideEncryption } = savedFileRes.result;
+    
 
       const courseVideo = await   CourseVideoModel.create({
            videoLength : 120,
-           videoUrl : savedFileRes.url,
+           videoUrl : ServerSideEncryption,
            isDemo : lessonData.isDemo
       });
 
@@ -56,6 +59,7 @@ export const createLesson = async (
       video : courseVideo,
       lesson : lesson 
     })
+    
      session.endSession();
 
     response.status(201).json({

@@ -57,7 +57,6 @@ export const saveFileToS3 = async  ( file : IFileType ) : Promise<IS3Response> =
       response.success = true ,
       response.message = "Success"
       response.result = result
-      response.url = fileName
 
       return  response;
       

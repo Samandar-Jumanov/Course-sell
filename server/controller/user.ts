@@ -12,6 +12,10 @@ import { redisClient } from "../db/redis";
 import { saveFileToS3 , deleteFile } from "../utils/s3";
 import {  IFileType } from "../types/s3"
 
+
+require("dotenv").config();
+
+
 export const signUp  = async ( request : Request , response : Response , next : NextFunction) =>{
 
       try {
@@ -121,13 +125,12 @@ export const login =
         };
 
 
-        const isPasswordMatch = await user.comparePassword(password);
+        const wrongPassword = await user.comparePassword(password);
 
-        if(isPasswordMatch) {
+        if(wrongPassword) {
               throw new ErrorHandler("Invalid password" , 403)
         }
 
-        console.log(user)
 
           await sendToken(user , response , 200)
          }catch(error : any ){
@@ -153,54 +156,54 @@ export const logOut = async ( request : Request | any  , response : Response , n
 }
 
 
-
 export const updateRefreshToken = 
     async ( request  : Request , response : Response , next : NextFunction) =>{
        try {
         
         console.log('Request come')
         const refreshToken = request.cookies.refresh_token;
-        
+        console.log('Refresh Token:', refreshToken);  // Debug log
+        console.log( "Sign refresh token",    process.env.SIGN_ACCES_TOKEN )
+
         const decodedToken = await jwt.verify(refreshToken , 
-            process.env.SIGN_REFRESH_TOKEN as string ) as JwtPayload;
+            process.env.SIGN_ACCES_TOKEN as string ) as JwtPayload;
+        console.log('Decoded Token:', decodedToken);  // Debug log
 
+        if(!decodedToken){
+            throw new ErrorHandler("Could not refresh token" ,400)
+        }
 
-            if(!decodedToken){
-                   throw new ErrorHandler("Could not refresh token" ,400)
-            };
+        const session : any  = await redisClient.get(decodedToken.id);
+        const user = JSON.parse(session);
 
+        if(!user) {
+            throw new ErrorHandler("Cannot get user" , 403)
+        }
 
-            const session : any  = await redisClient.get(decodedToken.id);
+        const accessToken = jwt.sign({  id : user?.id } , process.env.SIGN_ACCES_TOKEN as string  , {
+            expiresIn : "5m"
+        });
 
-            const user = JSON.parse(session);
+        const refresh_Token = jwt.sign({  id : user?.id } , process.env.SIGN_REFRESH_TOKEN as string , {
+              expiresIn : "3d"
+        });
 
-            if(!user) {
-                  throw new ErrorHandler("Cannot get user" , 403)
-            };
+        response.cookie("acces_token" , accessToken , accesTokenOptions );
+        response.cookie("refresh_token" , refresh_Token , refreshTokenOptions );
 
-
-            const accessToken = jwt.sign({  id : user?.id } , process.env.SIGN_ACCES_TOKEN as string  , {
-                expiresIn : "5m"
+        response.status(200).json({
+            message : "Success",
+            accessToken
+        });
+            
+       } catch (error : any ) {
+            console.log({
+                 refreshToken : error.message
             });
 
-            const refresh_Token = jwt.sign({  id : user?.id } , process.env.SIGN_REFRESH_TOKEN as string , {
-                  expiresIn : "3d"
-            } );
-
-
-            response.cookie("acces_token" , accessToken , accesTokenOptions )
-            response.cookie("refresh_token" , refreshToken , refreshTokenOptions )
-
-
-             response.status(200).json({
-                  message : "Success",
-                  accessToken
-             })
-            
-       } catch (error) {
-        
+            throw new ErrorHandler(error.message , 500);
        }
-} 
+}
 
 
 
