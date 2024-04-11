@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { CourseVideoModel, LessonModel  } from '../db/models/course.model';
-import { saveFileToS3 } from '../utils/s3';
+import { saveFileToS3 , deleteFile } from '../utils/s3';
 import ErrorHandler from '../utils/errorHandler';
 import { startSession } from 'mongoose';
 import { UserModel } from '../db/models/user.model';
@@ -15,7 +15,7 @@ export const createLesson = async (
   try {
     session.startTransaction();
 
-    const lessonData = request.body;
+    const  { title , isDemo} = request.body;
     const file: File | any = request.file;
     const userId: string = request.params.userId;
 
@@ -30,11 +30,11 @@ export const createLesson = async (
     const courseVideo = await CourseVideoModel.create({
       videoLength: 120,
       videoUrl: ServerSideEncryption,
-      isDemo: lessonData.isDemo
+      isDemo: isDemo
     });
 
     const lesson = await LessonModel.create({
-      title: 'First ever',
+      title: title,
       owner: user._id
     });
 
@@ -104,6 +104,7 @@ export const getUserLessons = async (
     }
   };
 
+
   export const deleteLesson = async (
     request: Request,
     response: Response,
@@ -111,15 +112,16 @@ export const getUserLessons = async (
   ) => {
     try {
 
-    const userId = request.params;
-    const lessonId = request.params
+      const userId = request.params.userId;
+      const lessonId = request.params.lessonId;
   
       const user = await UserModel.findById(userId);
+
       if (!user) {
         throw new ErrorHandler('User not found', 404);
       }
   
-      const lesson = await LessonModel.findById(lessonId);
+      const lesson = await LessonModel.findById(lessonId).populate('videos');
       if (!lesson) {
         throw new ErrorHandler('Lesson not found', 404);
       }
@@ -128,20 +130,25 @@ export const getUserLessons = async (
         throw new ErrorHandler('Lesson does not belong to the user', 403);
       }
   
-      await UserModel.updateOne(
-        { _id: userId },
-        { $pull: { lessons: lessonId } }
-      );
-
+      // Delete associated videos from AWS S3 bucket
+      for (const video of lesson.videos) {
+        const res =  await deleteFile(video.videoUrl); // Assuming video has 'videoUrl' field which stores the S3 URL
+        console.log(res)
+      }
+  
+      // Remove lesson from the user's lessons array
+      user.lessons.pull(lessonId);
+      await user.save();
+  
+      // Delete the lesson
       await lesson.deleteOne();
-      await user.save()
-      
   
       response.status(200).json({
         message: 'Lesson deleted successfully',
         success: true,
-        deletedLesson : lesson 
+        deletedLesson: lesson
       });
+  
     } catch (error: any) {
       console.log({
         deleteLessonError: error.message,

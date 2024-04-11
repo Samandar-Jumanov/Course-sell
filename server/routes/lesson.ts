@@ -1,9 +1,11 @@
 import { Router } from "express";
-import { createLesson  , getUserLessons} from "../controller/lesson"
+import { createLesson  , getUserLessons , deleteLesson} from "../controller/lesson"
 const lessonRouter = Router();
 
 lessonRouter.post("/create/lesson/:userId" , createLesson )
-lessonRouter.get("/:userId" , getUserLessons )
+lessonRouter.get("/userLessons/:userId" , getUserLessons )
+lessonRouter.delete("/delete/:userId/:lessonId" , deleteLesson )
+
 
 
 
