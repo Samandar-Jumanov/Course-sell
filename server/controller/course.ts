@@ -1,117 +1,75 @@
-import { Request , Response ,NextFunction } from "express"
-import { getFromS3, deleteFile } from "../utils/s3"
-import { IFileType } from "../types/s3";
-import {CourseModel  } from "../db/models/course.model"
-import  ErrorHandler  from "../utils/errorHandler";
-import { startSession } from 'mongoose';
-import { UserModel } from "../db/models/user.model"
-/*
-1: Lesson --> containes VideoCourse 
-2 : Course --> contains Lesson
+import { UserModel } from "../db/models/user.model";
+import { ICourse } from "../types/course";
+import { CourseModel, LessonModel } from "../db/models/course.model";
+import { Request, Response } from "express";
+import ErrorHandler from "../utils/errorHandler";
+import mongoose from "mongoose";
 
+export const createCourse = async (request: Request, response: Response) => {
+    const session = await mongoose.startSession();  // start session 
+    session.startTransaction(); // start transactions 
 
-Thats why wee need to created a courseVidoe --> save the video to db
-then take url and give it lesson 
-then make course 
+    try {
+        const userId = request.params.userId; // get userId 
 
+        const user = await UserModel.findById(userId).session(session); // find User 
 
-*/
-export const upload = async (
-  request: Request,
-  response: Response,
-  next: NextFunction
-) => {
-  const courseData = request.body;
+        if (!user) {
+            throw new ErrorHandler("User not found", 404);
+        }
+  
+        const {
+            title,
+            description,
+            lesson_ids,
+            tags,
+            benefits,
+            level,
+            prerequisites,
+        }: ICourse | any = request.body;
 
-  const session = await startSession();
+        if (!title || !description  || !tags || !benefits || !level || !prerequisites  === undefined || !lesson_ids) {
+            return response.status(500).json({ message: 'All required fields must be provided' });
+        }
 
-  try {
-    session.startTransaction();
+        const lessons = await LessonModel.find({ _id: { $in: lesson_ids } }).session(session);
 
-    // Create the new Course
-    const course = await CourseModel.create(
-      {
-        title: courseData.title,
-        description: courseData.description,
-        lessons: [courseData.lessonIds],
-        tags: courseData.tags,
-        benefits: courseData.benefits,
-        level: courseData.level,
-        prerequisites: courseData.prerequisites,
-      }
-    );
+        // if (lessons.length !== lesson_ids.length) {
+        //     return response.status(500).json({ message: 'Invalid lesson IDs provided' });
+        // } 
 
-    // Add the Course to the User's courses
-    const user = await UserModel.findById(courseData.userId).session(session);
+        const newCourse = new CourseModel({
+            title,
+            description,
+            instructor : userId,
+            lessons: lessons.map(lesson => lesson._id),
+            tags,
+            benefits,
+            level,
+            prerequisites,
+        });
 
-    if (!user) {
-      throw new ErrorHandler('User not found', 404);
+        const savedCourse = await newCourse.save({ session });
+
+        user.courses.push(savedCourse._id);
+
+        await user.save({ session });
+
+        await session.commitTransaction();
+        session.endSession();
+
+        response.status(201).json({
+           message : "Created succesfully",
+           success : true,
+           course : savedCourse
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        await session.abortTransaction();
+        session.endSession();
+
+        response.status(500).json({ message: 'Failed to create course' });
     }
-
-    console.log({
-        courseId : course._id
-    });
-
-    user.courses.push(course?._id );
-    await user.save();
-
-    await session.commitTransaction();
-
-    response.status(201).json({
-      message: 'Successfully created',
-      success: true,
-      course: course,
-    });
-
-  } catch (error: any) {
-    await session.abortTransaction();
-    console.log({
-      savingErrorToDb: error.message,
-    });
-
-    throw new ErrorHandler(error.message, 500);
-  } finally {
-    session.endSession();
-  }
-}
-
-
-export const getUserCourses =
- async (  request : Request , response : Response , next : NextFunction) =>{
-
-    const userId =  request.query?.userId;
-
-
-   const posts  : any  = [];
-
- 
-   for( const post of posts ) {
-        const url =  await getFromS3(post.url)
-        post.url = url
-   }
-
-
-}
-
-
-
-export const deleteUserCourse = async ( request : Request , response : Response , next : NextFunction) =>{
-
-    const { postId , userId } = request.params;
-
-    if(!postId || !userId ) {
-           return new Error("Invalid user or post ")
-    };
-
-
-
-      await deleteFile("" )
-
-
-    // delete post from database ;
-
-
-}
-
-
-
+};

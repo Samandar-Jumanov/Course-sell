@@ -3,9 +3,11 @@ import cookieParser from "cookie-parser";
 import cors from "cors"
 import { connectMongoose } from "./db/connectionMongo";
 import { ErrorMiddleware } from "./middlewares/error";
-import contentRouter from "./routes/content";
+import courseController from "./routes/course";
 import  userRouter from "./routes/user"
-import lessonRouter from "./routes/lesson"
+import lessonRouter from "./routes/lesson";
+
+
 require("dotenv").config();
 
 const app  : Express = express();
@@ -23,7 +25,7 @@ app.use(cors({
 
     }));
 
-app.use("/user" , contentRouter)
+app.use("/user" , courseController)
 app.use("/users/account" , userRouter)
 app.use("/lessons" , lessonRouter)
 

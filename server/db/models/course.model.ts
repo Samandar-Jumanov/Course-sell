@@ -95,7 +95,7 @@ const courseSchema = new Schema<ICourse>({
     },
     usersPurchased: {
         type: Number,
-        required: true
+        default : 0
     }
 });
 

@@ -27,9 +27,10 @@ export interface ILesson {
 
 }
 
+
 export interface ICourse extends Document {
     
-    _id : string,
+  
     title : string,
     description :string ,
     lessons : ILesson[],
