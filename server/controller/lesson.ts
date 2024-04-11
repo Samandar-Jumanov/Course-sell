@@ -4,6 +4,7 @@ import { saveFileToS3 , deleteFile } from '../utils/s3';
 import ErrorHandler from '../utils/errorHandler';
 import { startSession } from 'mongoose';
 import { UserModel } from '../db/models/user.model';
+import { IFileType } from '../types/s3';
 
 export const createLesson = async (
   request: Request,
@@ -15,8 +16,15 @@ export const createLesson = async (
   try {
     session.startTransaction();
 
-    const  { title , isDemo} = request.body;
-    const file: File | any = request.file;
+    const file : IFileType  | any = request.file;
+    console.log(file);
+
+    if(!file) {
+        throw new ErrorHandler("File is not provided" , 403)
+    }
+
+
+    const { title, isDemo } = request.body;
     const userId: string = request.params.userId;
 
     const user = await UserModel.findById(userId).select('lessons');
@@ -24,8 +32,17 @@ export const createLesson = async (
       throw new ErrorHandler('User not found', 404);
     }
 
+    console.log({
+      fileName: file?.originalname
+    });
+
     const savedFileRes = await saveFileToS3(file);
     const { '$metadata': metadata, ETag, ServerSideEncryption } = savedFileRes.result;
+
+    console.log(savedFileRes.result);
+    console.log({
+      Url: savedFileRes.url
+    });
 
     const courseVideo = await CourseVideoModel.create({
       videoLength: 120,

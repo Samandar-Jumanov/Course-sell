@@ -17,7 +17,7 @@ app.use(cookieParser())
 app.use(ErrorMiddleware)
 
 app.use(cors({
-      origin : "http://localhost:3000",
+      origin : "*",
       methods : ["POST" , 'GET' , 'PUT' , 'DELETE']
 }))
 
