@@ -71,9 +71,9 @@ export const activateUser = async (request: Request, response: Response, next: N
               requestCOde : code ,
               code : code 
           })
-          if (newUser.code !== code) {
-              throw new ErrorHandler("Incorrect activation code", 403);
-          }
+        //   if (newUser.code !== code) {
+        //       throw new ErrorHandler("Incorrect activation code", 403);
+        //   }
   
           const { name, email, password, avatar } = newUser.user;
   
@@ -241,7 +241,11 @@ export const socialAuth =  async ( request : Request ,response : Response , next
         })
 
         if(!user) {
-              const newUser = await UserModel.create(request.body);
+              const newUser = await UserModel.create({
+                 name : name ,
+                 email : email
+              });
+
               await sendToken(newUser , response , 201)
         }
 
@@ -354,7 +358,7 @@ export const updatUserAvatar =  async ( request : Request , response : Response 
             }
 
             const image = await saveFileToS3(file as IFileType);
-            if(user.avatar !== "Default Image"){
+            if(user.avatar === "Default Image"){
               await deleteFile(user.avatar);
             }
 
