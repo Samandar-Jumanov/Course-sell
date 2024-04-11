@@ -17,10 +17,10 @@ app.use(cookieParser())
 app.use(ErrorMiddleware)
 
 app.use(cors({
-      origin : "*",
-      methods : ["POST" , 'GET' , 'PUT' , 'DELETE']
-}))
-
+      origin: '*',
+      methods: ['POST', 'GET', 'PUT', 'DELETE'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+    }));
 
 app.use("/user" , contentRouter)
 app.use("/users/account" , userRouter)
