@@ -3,7 +3,8 @@ import { IUser } from "../types/user"
 import jwt  ,{  Secret }from "jsonwebtoken";
 import nodemailer from "nodemailer"
 import  ErrorHandler  from "../utils/errorHandler";
-
+import { generateActivationCodeEmail , generateNewOrderBody } from "./emailBodies";
+import { IEmailSendBody }  from "../types/mail"
 require("dotenv").config();
 
 
@@ -33,22 +34,15 @@ export const createActivationCode = async ( user : IUser | any  ) : Promise<IAct
 
 
 
-export const sendMail = ( sendTo : string , name : string , code: string  )  =>{
+export const sendMail  = ( { emailRequest }: IEmailSendBody  )  =>{
 
-const activationEmailBody =` 
-<div class="container" style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; border-radius: 8px;">
-    <h2 style="color: #333; text-align: center;">Email Activation Code</h2>
-    <h2 style="color: #007bff; text-align: center;">Hello ${name}</h2>
+  let body ;
 
-    <div style="margin-top: 20px; text-align: center;">
-        <p style="margin-bottom: 10px;">Activation Code: <strong>${code}</strong></p>
-        <p>Use the activation code above to activate your account.</p>
-    </div>
-
-    <button style="display: block; width: 100%; padding: 10px; margin-top: 20px; background-color: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Activate</button>
-</div>
-`
-
+  if(emailRequest?.code){
+    body =   generateActivationCodeEmail( emailRequest?.code , emailRequest.name as string )
+  }  else {
+      body = generateNewOrderBody(emailRequest?.courseName  as string , emailRequest.name as string  )
+  }
 
 
 const transporter = nodemailer.createTransport({
@@ -62,11 +56,11 @@ const transporter = nodemailer.createTransport({
   })
   
  
-    const mailOptions = {
+    const mailOptions : any  = {
         from: 'samandarjumanov@outlook.com',
-        to: sendTo,
-        html: activationEmailBody,
-        subject: "Activation code ",
+        to: emailRequest.sendTo,
+        html: body,
+        subject: emailRequest?.subject ,
       }
         
 
@@ -84,6 +78,9 @@ const transporter = nodemailer.createTransport({
         return "Sent"
 
       }catch( error : any ){
+        console.log({
+           emailSendingError : error.message
+        })
          return  new ErrorHandler(`${error.message}` , 500);
 
       }

@@ -53,9 +53,17 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
         type : String ,
         default : "User"
     },
+    orders :[ {
+        type : Types.ObjectId,
+        ref : "Order"
+    }],
 
-   
+    notification : [{
+        type : Types.ObjectId,
+        ref : "Order"
+    }]
 
+    
 } , { timestamps : true });
 
 

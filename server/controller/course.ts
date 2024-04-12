@@ -34,9 +34,7 @@ export const createCourse = async (request: Request, response: Response) => {
 
         const lessons = await LessonModel.find({ _id: { $in: lesson_ids } }).session(session);
 
-        // if (lessons.length !== lesson_ids.length) {
-        //     return response.status(500).json({ message: 'Invalid lesson IDs provided' });
-        // } 
+       
 
         const newCourse = new CourseModel({
             title,

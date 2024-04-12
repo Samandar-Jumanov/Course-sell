@@ -11,6 +11,7 @@ import { accesTokenOptions, refreshTokenOptions, sendToken } from "../utils/jwt"
 import { redisClient } from "../db/redis";
 import { saveFileToS3 , deleteFile } from "../utils/s3";
 import {  IFileType } from "../types/s3"
+import { IEmailSendBody } from "../types/mail";
 
 
 require("dotenv").config();
@@ -43,7 +44,16 @@ export const signUp  = async ( request : Request , response : Response , next : 
         const activationCode = (await activation).activationCode
 
 
-        const res  : string | ErrorHandler =  sendMail( email , name , activationCode) as string
+        const emailBody  : IEmailSendBody = {
+           emailRequest : {
+            sendTo : email ,
+            name  : name ,
+            code : activationCode,
+            subject : "Activation email"
+           }
+        }
+        
+        const res  : string | ErrorHandler =  sendMail(emailBody)
               
 
           response.status(201).json({
