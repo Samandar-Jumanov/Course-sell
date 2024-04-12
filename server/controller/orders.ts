@@ -24,9 +24,9 @@ export const createOrder = async ( request : Request , response : Response, next
 
         const user = await UserModel.findById(userId).populate("courses").session(session)
 
-        // if(user?.courses.map((each : IOrder | any ) => each._id === courseId)){
-        //       throw new ErrorHandler("You can not take this course" , 403)
-        // }
+        if(user?.courses.map((each : IOrder | any ) => each._id === courseId)){
+              throw new ErrorHandler("You can not take this course" , 403)
+        }
        
 
         const course = await  CourseModel.findById(courseId)
@@ -84,14 +84,19 @@ export const getCreatedOrders = async ( request : Request , response : Response 
 
         const userId = request.params.userId;
 
-        console.log(userId)
-        
+         const user = await UserModel.findById(userId).populate("orders");
+
+       
 
         response.status(200).json({
-             message : "Got them"
+             message : "Retirieved succesfully",
+             orders : user?.orders,
+             success : true 
         })
        } catch (error : any ) {
-
+        console.log({
+            error : error.message
+        })
         throw new ErrorHandler(error.message , 500)
         
        }
