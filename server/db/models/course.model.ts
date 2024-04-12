@@ -46,7 +46,7 @@ const lessonSchema = new Schema<ILesson>({
           ref : "User"
     },
     description : {
-          type : Types.ObjectId,
+          type : String ,
           required : true 
     }
 });

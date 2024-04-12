@@ -7,7 +7,7 @@ import courseController from "./routes/course";
 import  userRouter from "./routes/user"
 import lessonRouter from "./routes/lesson";
 import orderRouter from "./routes/order"
-
+import  notifcationRouter from  "./routes/notification"
 require("dotenv").config();
 
 const app  : Express = express();
@@ -29,6 +29,7 @@ app.use("/user" , courseController)
 app.use("/users/account" , userRouter)
 app.use("/lessons" , lessonRouter)
 app.use("/orders" , orderRouter)
+app.use("/notifications" , notifcationRouter )
 
 
 // routes 

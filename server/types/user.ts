@@ -12,7 +12,7 @@ export interface IUser extends Document {
      role : string ,
      lessons : string[] | any ,
      orders : string[],
-     notification : string[]
+     notifications : string[]
      courses : Array<{ courseId : string }>
      comparePassword : ( password : string ) => Promise<boolean>,
      signAccesToken : ( ) => string ,

@@ -39,7 +39,6 @@ export const createLesson = async (
     });
 
     const savedFileRes = await saveFileToS3(file);
-    const { '$metadata': metadata, ETag, ServerSideEncryption } = savedFileRes.result;
 
     console.log(savedFileRes.result);
     console.log({
@@ -55,7 +54,7 @@ export const createLesson = async (
     const lesson = await LessonModel.create({
       title: title || "Deafult title", 
       owner: user._id,
-      description : "Description "
+      description :  "Description "
     }); 
 
 

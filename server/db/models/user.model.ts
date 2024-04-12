@@ -58,11 +58,10 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
         ref : "Order"
     }],
 
-    notification : [{
+    notifications : [{
         type : Types.ObjectId,
         ref : "Order"
     }]
-
     
 } , { timestamps : true });
 

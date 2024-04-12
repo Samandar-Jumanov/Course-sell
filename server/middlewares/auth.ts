@@ -27,9 +27,6 @@ export const isAuthenticated = async ( request : Request , response : Response )
     })
 
 
-
-
-
     response.status(200).json({ 
          user : user
     })

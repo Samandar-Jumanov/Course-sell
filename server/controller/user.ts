@@ -53,8 +53,9 @@ export const signUp  = async ( request : Request , response : Response , next : 
            }
         }
         
-        const res  : string | ErrorHandler =  sendMail(emailBody)
+        const res  : string | ErrorHandler = await   sendMail(emailBody)
               
+        console.log(res)
 
           response.status(201).json({
              message : "Email sent",

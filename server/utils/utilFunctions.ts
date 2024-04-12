@@ -34,55 +34,47 @@ export const createActivationCode = async ( user : IUser | any  ) : Promise<IAct
 
 
 
-export const sendMail  = ( { emailRequest }: IEmailSendBody  )  =>{
 
-  let body ;
+export const sendMail = async ({ emailRequest }: IEmailSendBody) => {
+  let body;
 
-  if(emailRequest?.code){
-    body =   generateActivationCodeEmail( emailRequest?.code , emailRequest.name as string )
-  }  else {
-      body = generateNewOrderBody(emailRequest?.courseName  as string , emailRequest.name as string  )
+  if (emailRequest.subject === 'Activation email') {
+      body = generateActivationCodeEmail(emailRequest?.code as string, emailRequest.name as string);
+  } else {
+      body = generateNewOrderBody(emailRequest?.courseName as string, emailRequest.name as string);
   }
 
+  console.log(body)
 
-const transporter = nodemailer.createTransport({
-    pool: true,
-    service: 'hotmail',
-    port: 2525,
-    auth: {
-      user: 'samandarjumanov@outlook.com',
-      pass: process.env.EMAIL_PASSWORD
-    },
-  })
-  
- 
-    const mailOptions : any  = {
-        from: 'samandarjumanov@outlook.com',
-        to: emailRequest.sendTo,
-        html: body,
-        subject: emailRequest?.subject ,
-      }
-        
+  const transporter = nodemailer.createTransport({
+      pool: true,
+      service: 'hotmail',
+      port: 2525,
+      auth: {
+          user: 'samandarjumanov@outlook.com',
+          pass: process.env.EMAIL_PASSWORD,
+      },
+  });
 
-      try {
-          
-      transporter.sendMail(mailOptions, (error: any, info: any) => {
-         if(error) {
-            console.log(error.message)
-            return  new ErrorHandler(`${error.message}` , 500)
-         }
-         console.log(info)
-      })
 
-      
-        return "Sent"
+  const mailOptions: any = {
+      from: 'samandarjumanov@outlook.com',
+      to: emailRequest.sendTo,
+      html: body,
+      subject: emailRequest.subject,
+  };
 
-      }catch( error : any ){
-        console.log({
-           emailSendingError : error.message
-        })
-         return  new ErrorHandler(`${error.message}` , 500);
 
-      }
+  try {
+      const info = await transporter.sendMail(mailOptions);
+      console.log(info);
+      return 'Sent';
+  } catch (error: any) {
+      console.log({
+          emailSendingError: error.message,
+      });
+      throw new ErrorHandler(`${error.message}`, 500);
+  }
+};
 
-}
+
