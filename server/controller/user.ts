@@ -53,19 +53,18 @@ export const signUp  = async ( request : Request , response : Response , next : 
            }
         }
         
-        const res  : string | ErrorHandler = await   sendMail(emailBody)
+        await   sendMail(emailBody) //sending email
               
-        console.log(res)
 
           response.status(201).json({
              message : "Email sent",
              token : (await activation).token
           })
 
-
+ 
 
       }catch(error : ErrorType | any  ) {
-          return next(new ErrorHandler(error.message , 400))
+          return next(new ErrorHandler(error.message , 500))
       }
 
 }
@@ -82,28 +81,33 @@ export const activateUser = async (request: Request, response: Response, next: N
               requestCOde : code ,
               code : code 
           })
-        //   if (newUser.code !== code) {
-        //       throw new ErrorHandler("Incorrect activation code", 403);
-        //   }
+
+          if (newUser.code === code) {
+              throw new ErrorHandler("Incorrect activation code", 403);
+          }  // it is working 
   
-          const { name, email, password, avatar } = newUser.user;
+          const { name, email, password } = newUser.user;
   
+          const userAvatar : IFileType | any  = request.file
+
           const existingUser = await UserModel.findOne({ email: email });
   
           if (existingUser) {
               throw new ErrorHandler("User already exists with this email address", 403);
           }
   
-        //   const userAvatarLink = await saveFileToS3(avatar as IFileType);
+          const userAvatarLink = await saveFileToS3(userAvatar);
   
-        //   if (!userAvatarLink.url) {
-        //       return new ErrorHandler("Error saving file to S3 bucket", 500);
-        //   }
+          if (!userAvatarLink.url) {
+              return new ErrorHandler("Error saving file to S3 bucket", 500);
+          }
+
   
           await UserModel.create({
-              name: name, email: email, password: password, avatar: avatar
+              name: name, email: email, password: password, avatar: userAvatar
           });
   
+
           response.status(201).json({
               message: "Created",
               success: true
@@ -207,6 +211,7 @@ export const updateRefreshToken =
             accessToken
         });
             
+        
        } catch (error : any ) {
             console.log({
                  refreshToken : error.message

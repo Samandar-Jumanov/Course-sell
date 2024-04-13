@@ -114,33 +114,32 @@ export const deleteUserCourse = async (request: Request, response: Response) => 
     const { userId, courseId } = request.params;
 
     try {
-        const user = await UserModel.findById(userId).select("courses");
+        const user = await UserModel.findById(userId).select('courses');
 
         if (!user) {
-            throw new ErrorHandler("User not found", 404);
+            throw new ErrorHandler('User not found', 404);
         }
 
-        const index = user.courses.findIndex(course => course.courseId === courseId);
+        const courseIndex = user.courses.findIndex(course => course.courseId === courseId);
 
-        if (index === -1) {
+        if (courseIndex === -1) {
             throw new ErrorHandler("Course not found in user's courses", 404);
         }
 
-        user.courses.splice(index, 1);
+        user.courses.splice(courseIndex, 1);
 
-        await CourseModel.deleteOne({ _id: courseId });
-
-        await user.save();
+        await Promise.all([
+            CourseModel.deleteOne({ _id: courseId }),
+            user.save(),
+        ]);
 
         response.status(200).json({
-            message: "Deleted",
-            success: true
+            message: 'Deleted',
+            success: true,
         });
 
     } catch (error: any) {
-        console.log({
-            error: error.message
-        });
+        console.log({ error: error.message });
 
         throw new ErrorHandler(error.message, 500);
     }

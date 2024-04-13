@@ -37,12 +37,14 @@ export const isAuthenticated = async ( request : Request , response : Response )
 }
 
 
-export const authanticate = async ( ...roles : string[]) =>{
+export const authanticate =  ( ...roles : string[]) =>{
           return  (request : Request | any  , response : Response , next : NextFunction) =>{
                 if(!roles.includes(request?.user?.role)) {
                        return new ErrorHandler("You dont have acces for this page" , 403)
                 }
-
                 next()
           }
-}
+};
+
+
+

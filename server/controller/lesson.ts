@@ -52,9 +52,9 @@ export const createLesson = async (
     });
 
     const lesson = await LessonModel.create({
-      title: title || "Deafult title", 
+      title: title , 
       owner: user._id,
-      description :  "Description "
+      description :  description 
     }); 
 
 
@@ -64,11 +64,6 @@ export const createLesson = async (
     await lesson.save({ session });
     await user.save({ session });
 
-    console.log({
-      video: courseVideo,
-      lesson: lesson,
-      user: user.lessons
-    });
 
     await session.commitTransaction();
     session.endSession();
