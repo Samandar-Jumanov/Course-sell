@@ -226,7 +226,7 @@ export const getUserById =  async ( request : Request , response : Response , ne
 
         const user = await UserModel.findById(userId);
 
-
+         console.log(user)
         if(!user){
              throw new ErrorHandler("Something went wrong" , 500)
         }

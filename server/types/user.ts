@@ -1,5 +1,4 @@
 import { Document } from "mongoose";
-import { IFileType } from "./s3";
 
 
 
@@ -32,3 +31,15 @@ export interface IUserRegisterBody {
 
 
 
+
+
+
+export type IGetUserById = {
+     email  : string ,
+     password : string 
+}
+
+
+export type IGetUserByIdResponse = {
+     
+}

@@ -57,3 +57,6 @@ connectMongoose().then(res =>{
 });
 
 
+
+
+export default app 
