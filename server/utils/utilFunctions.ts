@@ -22,8 +22,8 @@ export const createCheckout = async ( paymentInfo : IPayment)  =>  {
      
     try {
         const paymentIntent = await  stripe.paymentIntents.create({
-            amount : paymentInfo.unit_amount,
-            currency : paymentInfo.price_data.currency
+            amount : paymentInfo.unit_amount * 100 ,
+            currency : paymentInfo.price_data.currency 
       })
   
 
