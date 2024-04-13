@@ -43,3 +43,11 @@ export type IGetUserById = {
 export type IGetUserByIdResponse = {
      
 }
+
+
+
+export type IActivationToken = {
+     activationCode : string,
+     token : string 
+ };
+ 

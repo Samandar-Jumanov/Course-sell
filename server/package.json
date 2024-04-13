@@ -16,6 +16,7 @@
     "@aws-sdk/client-s3": "^3.550.0",
     "@aws-sdk/s3-request-presigner": "^3.550.0",
     "@types/sharp": "^0.32.0",
+    "@types/stripe": "^8.0.417",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -29,6 +30,7 @@
     "nodemailer": "^6.9.13",
     "nodemon": "^3.1.0",
     "sharp": "^0.33.3",
+    "stripe": "^15.1.0",
     "ts-node-dev": "^2.0.0"
   },
   "devDependencies": {

@@ -5,14 +5,48 @@ import nodemailer from "nodemailer"
 import  ErrorHandler  from "../utils/errorHandler";
 import { generateActivationCodeEmail , generateNewOrderBody } from "./emailBodies";
 import { IEmailSendBody }  from "../types/mail"
+import { IActivationToken } from "../types/user"
+import {IPayment} from "../types/payment";
 require("dotenv").config();
 
+import  Stripe   from "stripe" 
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string , {
+      apiVersion : "2024-04-10"
+} )
 
 
-type IActivationToken = {
-    activationCode : string,
-    token : string 
+
+
+export const createCheckout = async ( paymentInfo : IPayment)  =>  {
+     
+    try {
+        const paymentIntent = await  stripe.paymentIntents.create({
+            amount : paymentInfo.unit_amount,
+            currency : paymentInfo.price_data.currency
+      })
+  
+
+      return {
+        success : true ,
+        pIntent : paymentIntent.client_secret
+      };
+
+
+    }catch( error : any ){
+          console.log(
+            {
+                 stripeError : error.message
+            }
+          )
+
+         return {
+            success : false ,
+            pIntent : undefined 
+         }
+    }
 };
+
 
 
 export const createActivationCode = async ( user : IUser | any  ) : Promise<IActivationToken>   => {

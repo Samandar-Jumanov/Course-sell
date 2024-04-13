@@ -2,20 +2,20 @@ import { Response , Request , NextFunction } from "express";
 import ErrorHandler from "../utils/errorHandler"
 import  OrderModel from "../db/models/order.model";
 import { IOrder } from "../types/order";
-import { sendMail } from "../utils/utilFunctions";
+import { sendMail , createCheckout } from "../utils/utilFunctions";
 import { UserModel } from "../db/models/user.model";
 import mongoose from "mongoose";
 import { IEmailSendBody } from "../types/mail";
 import { CourseModel } from "../db/models/course.model";
 import NotificationModel from "../db/models/notification";
-
+import { IPayment } from "../types/payment";
 export const createOrder = async (request: Request, response: Response, next: NextFunction) => {
     const session = await mongoose.startSession();
 
     try {
         await session.startTransaction();
 
-        const { userId, courseId, paymentInfo } = request.body as IOrder;
+        const { userId, courseId, paymentInfo }  = request.body as IOrder;
 
         if (!userId || !courseId || !paymentInfo) {
             throw new ErrorHandler('Invalid inputs', 400);
@@ -32,6 +32,16 @@ export const createOrder = async (request: Request, response: Response, next: Ne
         if (!course) {
             throw new ErrorHandler('Course not found', 404);
         }
+
+
+        const responseStripe = await createCheckout(paymentInfo);
+
+
+        if(!responseStripe.success){
+               throw new ErrorHandler("Something went wrong , please try again later" , 500)
+        };
+
+        
 
         const order = new OrderModel({
             userId: userId,
