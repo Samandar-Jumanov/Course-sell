@@ -128,7 +128,8 @@ export const getUserCourses = async ( request : Request , response : Response ) 
            }catch( error : any ){
              console.log({
                   coures : error.message
-             })
+             });
+             
             throw new ErrorHandler('Internal server error' , 500)
 
            }
