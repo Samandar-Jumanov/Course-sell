@@ -7,6 +7,9 @@ import { generateActivationCodeEmail , generateNewOrderBody } from "./emailBodie
 import { IEmailSendBody }  from "../types/mail"
 import { IActivationToken } from "../types/user"
 import {IPayment} from "../types/payment";
+import { redisClient } from "../db/redis";
+import { Model } from "mongoose"
+
 require("dotenv").config();
 
 import  Stripe   from "stripe" 
@@ -14,6 +17,53 @@ import  Stripe   from "stripe"
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string , {
       apiVersion : "2024-04-10"
 } )
+
+
+export const cacheData = async ( id : string  , name : string  , spec   : string  , time : number , data : any   ) =>{
+
+     try {
+         
+      await  redisClient.setex(`${name}:${id}:${spec}` , 
+            time , 
+            JSON.stringify(data)  , ( error ) =>  {
+                    if(error){
+                           throw new ErrorHandler("Something went wrong with caching" , 500)
+                    }
+            } )
+
+            return true 
+
+     }catch( error : any ){
+             console.log({
+                   error : error.message
+             })
+             throw new ErrorHandler("Something went wrong with caching" , 500)
+     }
+       
+}
+
+
+
+export const getCachedData = async ( name : string ) =>{
+         try {
+
+            let cachedData : any
+            redisClient.get(name , async ( error , data )=>{
+                   if(error  ) {
+                      throw new ErrorHandler(error.message , 500)
+                   }
+    
+                     cachedData = data 
+            })
+
+
+            return cacheData 
+         }catch( error : any ){
+               throw new ErrorHandler(error.message , 500)
+         }
+};
+
+
 
 
 

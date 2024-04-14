@@ -4,6 +4,7 @@ import { CourseModel, LessonModel } from "../db/models/course.model";
 import { Request, Response } from "express";
 import ErrorHandler from "../utils/errorHandler";
 import mongoose from "mongoose";
+import { redisClient } from "../db/redis";
 
 export const createCourse = async (request: Request, response: Response) => {
     const session = await mongoose.startSession();  // start session 
@@ -75,11 +76,16 @@ export const createCourse = async (request: Request, response: Response) => {
 
 
 export const getUserCourses = async ( request : Request , response : Response ) =>{
+  
+
+
 
 
            try {
 
             const userId =  request.params.userId ;
+
+
 
             const user = await UserModel.findById(userId).populate("courses")
 
@@ -87,12 +93,7 @@ export const getUserCourses = async ( request : Request , response : Response ) 
                  throw new ErrorHandler("User not found ", 404)
             }
 
-            // let userCourses = []
-
-            // for(const c of user.courses) {
-            //       let course = await CourseModel.findById(c)
-            //       userCourses.push(course)
-            // };
+           
 
 
             response.status(200).json({
@@ -108,7 +109,10 @@ export const getUserCourses = async ( request : Request , response : Response ) 
 
            }
 
-}
+};
+
+
+
 
 export const deleteUserCourse = async (request: Request, response: Response) => {
     const { userId, courseId } = request.params;
