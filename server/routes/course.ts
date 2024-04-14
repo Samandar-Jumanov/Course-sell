@@ -5,9 +5,8 @@ const courseController = Router();
 
 courseController.post("/course/createCourse/:userId" ,isAuthenticated, authanticate("instructor") , createCourse);
 courseController.delete("/course/delete/:userId/:courseId"  ,isAuthenticated, authanticate("instructor"), deleteUserCourse);
-courseController.get("/course/get/:userId" , getUserCourses);
+courseController.get("/course/get/:userId" , isAuthenticated, authanticate("instructor") , getUserCourses);
 
-//,isAuthenticated, authanticate("instructor") 
 
 export default courseController;
 
