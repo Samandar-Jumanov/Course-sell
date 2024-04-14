@@ -8,7 +8,8 @@ import mongoose from "mongoose";
 import { IEmailSendBody } from "../types/mail";
 import { CourseModel } from "../db/models/course.model";
 import NotificationModel from "../db/models/notification";
-import { IPayment } from "../types/payment";
+import {  getCachedData , cacheData } from "../utils/utilFunctions";
+
 export const createOrder = async (request: Request, response: Response, next: NextFunction) => {
     const session = await mongoose.startSession();
 
@@ -112,29 +113,52 @@ export const createOrder = async (request: Request, response: Response, next: Ne
 };
 
 
-export const getCreatedOrders = async ( request : Request , response : Response , next : NextFunction) =>{
-       try {
 
-        const userId = request.params.userId;
 
-         const user = await UserModel.findById(userId).populate("orders");
-       
-
+export const getCreatedOrders = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const userId = request.params.userId;
+  
+      // First, try to get cached data
+      const cached = await getCachedData(userId, 'userOrders', 'orders');
+  
+      if (cached.data) {
+        // If cached data exists, send cached data
         response.status(200).json({
-             message : "Retirieved succesfully",
-             orders : user?.orders,
-             success : true 
-        })
-       } catch (error : any ) {
-        console.log({
-            error : error.message
-        })
-        throw new ErrorHandler(error.message , 500)
-        
-       }
-};
-
-
-
+          message: 'User orders retrieved from cache successfully',
+          success: true,
+          orders: JSON.parse(cached.data),
+        });
+        return;
+      }
+  
+      // If cached data doesn't exist, fetch from database
+      const user = await UserModel.findById(userId).populate('orders');
+  
+      if (!user) {
+        throw new ErrorHandler('User not found | Something went wrong', 404);
+      };
+  
+      // Cache the fetched data
+      await cacheData(userId, 'userOrders', 'orders', 3600, user.orders); // 3600 seconds = 1 hour
+  
+      response.status(200).json({
+        message: 'User orders retrieved successfully',
+        success: true,
+        orders: user.orders,
+      });
+  
+    } catch (error: any) {
+      console.log({
+        error: error.message,
+      });
+  
+      next(new ErrorHandler(error.message, 500));
+    }
+  };
 
 

@@ -6,6 +6,7 @@ import { startSession } from 'mongoose';
 import { UserModel } from '../db/models/user.model';
 import { IFileType } from '../types/s3';
 import mongoose from "mongoose";
+import { getCachedData , cacheData  } from "../utils/utilFunctions";
 
 
 export const createLesson = async (
@@ -88,36 +89,47 @@ export const createLesson = async (
 
 
 export const getUserLessons = async (
-    request: Request,
-    response: Response,
-    next: NextFunction
-  ) => {
-    const userId = request.params.userId;
-  
-    try {
-      const user = await UserModel.findById(userId)
-        .populate('lessons')
-        .select('lessons');
-  
-      if (!user) {
-        throw new ErrorHandler('User not found | Something went wrong', 404);
-      };
+  request: Request,
+  response: Response,
+  next: NextFunction
+) => {
+  const userId = request.params.userId;
 
-  
+  try {
+    const cached = await getCachedData(userId, 'userLessons', 'lessons');
+
+    if (cached.data) {
       response.status(200).json({
-        message: 'User lessons retrieved successfully',
+        message: 'User lessons retrieved from cache successfully',
         success: true,
-        lessons: user.lessons,
+        lessons: JSON.parse(cached.data),
       });
-  
-    } catch (error: any) {
-      console.log({
-        lessonGettingError: error.message,
-      });
-  
-      next(new ErrorHandler(error.message, 500));
+      return;
     }
-  };
+
+    const user = await UserModel.findById(userId).populate('lessons');
+
+    if (!user) {
+      throw new ErrorHandler('User not found | Something went wrong', 404);
+    };
+
+    await cacheData(userId, 'userLessons', 'lessons', 3600, user.lessons);
+
+    response.status(200).json({
+      message: 'User lessons retrieved successfully',
+      success: true,
+      lessons: user.lessons,
+    });
+
+  } catch (error: any) {
+    console.log({
+      lessonGettingError: error.message,
+    });
+
+    next(new ErrorHandler(error.message, 500));
+  }
+};
+
 
   export const deleteLesson = async (
     request: Request,
