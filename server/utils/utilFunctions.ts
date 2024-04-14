@@ -44,11 +44,11 @@ export const cacheData = async ( id : string  , name : string  , spec   : string
 
 
 
-export const getCachedData = async ( name : string ) =>{
+export const getCachedData = async ( id : string , name : string , spec : string ) =>{
          try {
 
             let cachedData : any
-            redisClient.get(name , async ( error , data )=>{
+            redisClient.get(`${name}:${id}:${spec}` , async ( error , data )=>{
                    if(error  ) {
                       throw new ErrorHandler(error.message , 500)
                    }
@@ -57,7 +57,12 @@ export const getCachedData = async ( name : string ) =>{
             })
 
 
-            return cacheData 
+            return {
+                  data : cachedData ,
+                  success : true 
+            } ;
+
+            
          }catch( error : any ){
                throw new ErrorHandler(error.message , 500)
          }

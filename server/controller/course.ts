@@ -4,7 +4,7 @@ import { CourseModel, LessonModel } from "../db/models/course.model";
 import { Request, Response } from "express";
 import ErrorHandler from "../utils/errorHandler";
 import mongoose from "mongoose";
-import { redisClient } from "../db/redis";
+import { cacheData , getCachedData } from "../utils/utilFunctions";
 
 export const createCourse = async (request: Request, response: Response) => {
     const session = await mongoose.startSession();  // start session 
@@ -76,14 +76,10 @@ export const createCourse = async (request: Request, response: Response) => {
 
 
 export const getUserCourses = async ( request : Request , response : Response ) =>{
-  
-
-
-
 
            try {
 
-            const userId =  request.params.userId ;
+            const userId : string  =  request.params.userId ;
 
 
 
@@ -93,13 +89,41 @@ export const getUserCourses = async ( request : Request , response : Response ) 
                  throw new ErrorHandler("User not found ", 404)
             }
 
-           
+
+            const cachedData =  await getCachedData(userId , "user" , "courses");
+
+
+            if(!cachedData.success){
+
+                const redisClientCaching = await  cacheData(userId  , "user" , "courses" , 3600 , user.courses );
+
+                if(!redisClientCaching){
+                   response.status(500).json({
+                     message : "Something went wrong"
+                   })
+
+                   return
+                }
+
+                 return
+
+            }
+
+
+            if(cachedData.data) {
+                response.status(200).json({
+                    message : "User courses retirieved successfully",
+                    courses : cachedData.data
+               })
+            }
+
 
 
             response.status(200).json({
-                 message : "User courses retirieved successfully",
-                 courses : user.courses
-            })
+                message : "User courses retirieved successfully",
+                courses : user.courses
+           })
+
 
            }catch( error : any ){
              console.log({
