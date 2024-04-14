@@ -8,6 +8,7 @@ import  userRouter from "./routes/user"
 import lessonRouter from "./routes/lesson";
 import orderRouter from "./routes/order"
 import  notifcationRouter from  "./routes/notification"
+import { httpCacheMiddleware } from "./utils/utilFunctions"
 require("dotenv").config();
 
 const app  : Express = express();
@@ -17,6 +18,7 @@ const app  : Express = express();
 app.use(express.json())
 app.use(cookieParser())
 app.use(ErrorMiddleware)
+app.use(httpCacheMiddleware) // http caching for optimization 
 
 app.use(cors({
       origin: '*',

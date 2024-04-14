@@ -8,11 +8,33 @@ import { IEmailSendBody }  from "../types/mail"
 import { IActivationToken } from "../types/user"
 import {IPayment} from "../types/payment";
 import { redisClient } from "../db/redis";
-import { Model } from "mongoose"
-
+import { Request , Response , NextFunction  } from "express";
 require("dotenv").config();
 
 import  Stripe   from "stripe" 
+
+
+export const httpCacheMiddleware = (req: Request, res: Response, next: NextFunction) => {
+    switch (req.method) {
+      case 'GET':
+        res.setHeader('Cache-Control', 'max-age=3600, public');
+        res.setHeader('Expires', new Date(Date.now() + 3600000).toUTCString());
+        res.setHeader('Vary', 'Accept-Encoding, User-Agent');
+        break;
+      case 'POST':
+      case 'PUT':
+      case 'DELETE':
+        res.setHeader('Cache-Control', 'no-store');
+        res.setHeader('Vary', 'Accept-Encoding, User-Agent');
+        break;
+      default:
+        res.setHeader('Cache-Control', 'no-store');
+        res.setHeader('Vary', 'Accept-Encoding, User-Agent');
+        break;
+    }
+  
+    next();
+  };
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string , {
       apiVersion : "2024-04-10"
